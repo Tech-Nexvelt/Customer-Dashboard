@@ -3,78 +3,105 @@ import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Home, Clock, ClipboardList, Bookmark, MessageCircle, BarChart2,
-  Sparkles, Timer, Settings, LucideIcon
+  Sparkles, Timer, Settings, LucideIcon, Lock
 } from "lucide-react";
 import { navItems, bottomNavItems } from "@/constants/navItems";
 import { NavItem } from "@/types/dashboard";
 import { useDashboard } from "@/lib/dashboard/dashboardContext";
+import { PlanType } from "@/constants/planLimits";
 
 const iconMap: Record<string, LucideIcon> = {
   Home, Clock, ClipboardList, Bookmark, MessageCircle, BarChart2,
   Sparkles, Timer, Settings,
 };
 
+import C from "@/constants/colors";
+
 const LABEL_STYLE: React.CSSProperties = {
   fontSize: 10,
-  fontWeight: 600,
-  color: "#C4C4BE",
-  letterSpacing: "0.07em",
+  fontWeight: 700,
+  color: "#94A3B8",
+  letterSpacing: "0.1em",
   textTransform: "uppercase",
-  marginBottom: 4,
-  marginTop: 8,
-  paddingLeft: 2,
+  marginBottom: 8,
 };
 
-export default function Sidebar() {
+const PREMIUM_FEATURES = ["Prep", "Plan", "AI Tools"];
+
+export default function Sidebar({ expanded = true }: { expanded?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { addTab, tabs } = useDashboard();
+  const { addTab } = useDashboard();
+  
+  // Mock plan for now
+  const currentPlan: PlanType = "basic";
+
+  const isLocked = (label: string) => {
+    return currentPlan === "basic" && PREMIUM_FEATURES.includes(label);
+  };
 
   const handleNav = (item: NavItem) => {
-    // 1. Physically Navigate
+    if (isLocked(item.label)) {
+      router.push("/dashboard/plans");
+      return;
+    }
     router.push(item.href);
-    
-    // 2. Add/Select Tab
-    addTab(item.label, item.href, "#10B981");
+    addTab(item.label, item.href, C.teal);
   };
 
   const renderItem = (item: NavItem) => {
     const Icon = iconMap[item.icon];
     const active = pathname === item.href;
+    const locked = isLocked(item.label);
     
     return (
       <div 
         key={item.id} 
         onClick={() => handleNav(item)} 
-        style={{ cursor: "pointer", width: "100%", display: "flex", justifyContent: "center" }}
+        style={{ cursor: "pointer", width: "100%", padding: "2px 0", opacity: locked ? 0.7 : 1 }}
       >
         <div
-          title={item.label}
+          title={locked ? `${item.label} (Premium Feature)` : item.label}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 11,
+            width: "100%",
+            height: 44,
+            borderRadius: 12,
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            background: active ? "#F3F4F6" : "transparent",
-            position: "relative",
-            marginBottom: 2,
-            transition: "background 0.15s",
+            padding: expanded ? "0 14px" : "0",
+            justifyContent: expanded ? "flex-start" : "center",
+            background: active ? C.iconActiveBg : "transparent",
+            transition: "all 0.2s",
+            gap: 12,
           }}
         >
-          {Icon && <Icon size={18} color={active ? "#1A1A1A" : "#9CA3AF"} strokeWidth={active ? 2.2 : 1.8} />}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 34 }}>
+            {Icon && <Icon size={20} color={active ? C.teal : C.iconInactive} strokeWidth={active ? 2.5 : 2} />}
+          </div>
+          
+          {expanded && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
+              <span style={{ 
+                fontSize: 14, 
+                fontWeight: active ? 700 : 500, 
+                color: active ? C.text : C.muted,
+                marginTop: 1
+              }}>
+                {item.label}
+              </span>
+              {locked && <Lock size={12} color={C.muted} />}
+            </div>
+          )}
+
           {item.badge !== undefined && item.badge > 0 && (
             <span
               style={{
-                position: "absolute",
-                top: 6,
-                right: 6,
-                width: 7,
-                height: 7,
+                marginLeft: "auto",
+                width: 6,
+                height: 6,
                 borderRadius: "50%",
-                background: "#10B981",
-                border: "1.5px solid #fff",
+                background: C.teal,
+                boxShadow: `0 0 10px ${C.teal}40`,
               }}
             />
           )}
@@ -86,82 +113,78 @@ export default function Sidebar() {
   return (
     <div
       style={{
-        width: 68,
+        width: expanded ? 240 : 68,
         flexShrink: 0,
-        background: "#FFFFFF",
-        borderRight: "1px solid #EBEBEB",
-        height: "100vh",
+        background: C.white,
+        height: "100%",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
+        alignItems: expanded ? "flex-start" : "center",
         paddingTop: 14,
-        paddingBottom: 20,
+        paddingBottom: 24,
         position: "sticky",
         top: 0,
         overflowY: "auto",
         zIndex: 20,
+        transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-      <div
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: 12,
-          background: "#1A1A1A",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 24,
-          flexShrink: 0,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-          cursor: "pointer",
-        }}
-        onClick={() => router.push("/dashboard/overview")}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" fill="white"/>
-        </svg>
+      {/* Brand area removed from here as it's in TopBar now */}
+      
+      <div style={{ width: "100%", paddingLeft: 22, marginBottom: 16 }}>
+        <p style={{ ...LABEL_STYLE, color: C.light_text }}>Platform</p>
       </div>
 
-      <div style={{ width: "100%", paddingLeft: 14, marginBottom: 8 }}>
-        <p style={LABEL_STYLE}>Menu</p>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", paddingInline: 10, flex: 1 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%", alignItems: "center" }}>
+      <div style={{ display: "flex", flexDirection: "column", width: "100%", paddingInline: 14, flex: 1 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, width: "100%" }}>
           {navItems.map(renderItem)}
         </div>
-        <div style={{ width: 28, height: 1, background: "#F0F0EC", margin: "20px 0" }} />
-        <div style={{ width: "100%", paddingLeft: 4, marginBottom: 8 }}>
-          <p style={{ ...LABEL_STYLE, marginTop: 0 }}>Settings</p>
+        
+        <div style={{ width: "100%", height: 1, background: C.border, margin: "24px 0" }} />
+        
+        <div style={{ width: "100%", paddingLeft: 8, marginBottom: 16 }}>
+          <p style={{ ...LABEL_STYLE, marginTop: 0, color: C.light_text }}>Systems</p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%", alignItems: "center" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, width: "100%" }}>
           {bottomNavItems.map(renderItem)}
         </div>
       </div>
 
-      <div style={{ width: "100%", paddingLeft: 14, marginBottom: 8 }}>
-        <p style={LABEL_STYLE}>Account</p>
-      </div>
-      <div
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: "50%",
-          overflow: "hidden",
-          border: "2px solid #F0F0EC",
-          cursor: "pointer",
-          flexShrink: 0,
-          transition: "transform 0.2s",
-        }}
-        className="hover-scale"
-        onClick={() => router.push("/dashboard/settings")}
-      >
-        <img 
-          src="https://api.dicebear.com/7.x/avataaars/svg?seed=Kishore" 
-          alt="User" 
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
+      <div style={{ width: "100%", padding: "0 14px", marginTop: "auto" }}>
+        <div
+          style={{
+            width: "100%",
+            padding: "12px",
+            background: C.bg,
+            borderRadius: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            cursor: "pointer",
+          }}
+          onClick={() => router.push("/dashboard/settings")}
+        >
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              overflow: "hidden",
+            }}
+          >
+            <img 
+              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Kishore" 
+              alt="User" 
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </div>
+          {expanded && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Kishore Ch</p>
+              <p style={{ fontSize: 11, fontWeight: 500, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Unlock Premium</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

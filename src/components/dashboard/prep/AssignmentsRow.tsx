@@ -27,7 +27,7 @@ export default function AssignmentsRow() {
 
   return (
     <div style={{ marginBottom: 28 }}>
-      <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1A1A1A", marginBottom: 14, letterSpacing: "-0.01em" }}>Assignments</h2>
+      <h2 style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 14, letterSpacing: "-0.01em" }}>Job Links</h2>
       <div className="assign-grid">
         {ASSIGN_CARDS.map((c, i) => (
           <div

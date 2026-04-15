@@ -1,141 +1,185 @@
 "use client";
 import React from "react";
 import { usePathname } from "next/navigation";
-import { Bell, MessageSquare, Search, Menu, Home, LucideIcon } from "lucide-react";
+import { Bell, Menu, Home, Sparkles, LogOut } from "lucide-react";
 import C from "@/constants/colors";
 import { navItems, bottomNavItems } from "@/constants/navItems";
+import { useDashboard } from "@/lib/dashboard/dashboardContext";
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 
 const allItems = [...navItems, ...bottomNavItems];
-
-interface IconBtnProps {
-  Icon: LucideIcon;
-}
-
-const IconBtn: React.FC<IconBtnProps> = ({ Icon }) => (
-  <button
-    style={{
-      width: 34,
-      height: 34,
-      borderRadius: 10,
-      background: "transparent",
-      border: "none",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      position: "relative",
-    }}
-  >
-    <Icon size={18} color={C.muted} strokeWidth={1.8} />
-  </button>
-);
 
 interface TopBarProps {
   onMenuClick: () => void;
 }
 
+import Link from "next/link";
+
 export default function TopBar({ onMenuClick }: TopBarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { unreadJobCount } = useDashboard();
   const active = allItems.find((n) => pathname.startsWith(n.href));
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.refresh();
+  };
 
   return (
     <div
       style={{
-        height: 60,
-        background: "transparent",
+        height: 64,
+        background: C.white,
+        borderBottom: `1px solid ${C.border}`,
         display: "flex",
         alignItems: "center",
-        padding: "0 22px",
-        gap: 12,
+        padding: "0 24px",
+        gap: 20,
         flexShrink: 0,
-        zIndex: 10,
+        zIndex: 50,
       }}
     >
+      {/* Branding Anchor */}
+      <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, marginRight: 20 }}>
+        <img 
+          src="/NVlogo.png" 
+          alt="Nexvelt Logo" 
+          style={{ height: 32, width: "auto" }}
+        />
+      </Link>
+
       <button
         className="ds-hamburger"
         onClick={onMenuClick}
         style={{
-          width: 32,
-          height: 32,
-          borderRadius: 8,
-          background: "white",
-          border: "1px solid #EBEBEB",
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          background: C.bg,
+          border: `1px solid ${C.border}`,
           cursor: "pointer",
-          display: "none",
+          display: "flex", // Show on mobile via CSS
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Menu size={16} color={C.text} />
+        <Menu size={18} color={C.text} />
       </button>
 
       {/* Breadcrumbs */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
-        <span style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 400 }}>Kishore</span>
-        <span style={{ color: "#C4C4BE", fontSize: 14 }}>›</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
+        <span style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}>Kishore</span>
+        <span style={{ color: C.light_text, fontSize: 14 }}>/</span>
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 6,
+            gap: 8,
             fontSize: 14,
-            fontWeight: 600,
-            color: "#1A1A1A",
+            fontWeight: 700,
+            color: C.text,
           }}
         >
           <div 
             style={{ 
-              width: 24, 
-              height: 24, 
-              borderRadius: 6, 
-              background: "#FFFFFF", 
-              border: "1px solid #EBEBEB",
+              width: 28, 
+              height: 28, 
+              borderRadius: 8, 
+              background: C.bg, 
+              border: `1px solid ${C.border}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center"
             }}
           >
-            <Home size={14} color="#1A1A1A" strokeWidth={2.4} />
+            <Home size={15} color={C.text} strokeWidth={2.5} />
           </div>
           {active?.label || "Overview"}
         </div>
       </div>
 
-      {/* Utility Icons */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div 
-          onClick={() => alert("Notifications panel")}
-          style={{ position: "relative" }}
+      {/* Actions Section */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <button
+          style={{
+            background: "#0F172A",
+            color: "white",
+            padding: "8px 16px",
+            borderRadius: 10,
+            fontSize: 12,
+            fontWeight: 700,
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            cursor: "pointer",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          }}
         >
-          <div style={{ padding: 6, borderRadius: 8, background: "white", border: "1px solid #EBEBEB", cursor: "pointer" }}>
-            <Bell size={18} color="#1A1A1A" strokeWidth={2} />
+          <Sparkles size={14} fill="#2DD4A7" color="#2DD4A7" />
+          Unlock Premium
+        </button>
+
+        <div style={{ width: 1, height: 24, background: C.border }} />
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ padding: 8, borderRadius: 10, background: C.bg, cursor: "pointer", position: "relative" }}>
+            <Bell size={18} color={C.text} strokeWidth={2} />
+            {unreadJobCount > 0 && (
+              <span 
+                style={{ 
+                  position: "absolute", 
+                  top: -2, 
+                  right: -2, 
+                  minWidth: 18, 
+                  height: 18, 
+                  padding: "0 4px",
+                  background: C.teal, 
+                  borderRadius: 9, 
+                  border: "2px solid white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 9,
+                  fontWeight: 800,
+                  color: "white"
+                }}
+              >
+                {unreadJobCount}
+              </span>
+            )}
           </div>
-          <span
+          
+          <button
+            onClick={handleLogout}
             style={{
-              position: "absolute",
-              top: -2,
-              right: -2,
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              background: "#10B981",
-              border: "2px solid white",
+              padding: 8,
+              borderRadius: 10,
+              background: C.bg,
+              border: `1px solid ${C.border}`,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: C.text,
+              transition: "all 0.2s"
             }}
-          />
-        </div>
-        <div 
-          onClick={() => alert("Messages panel")}
-          style={{ padding: 6, borderRadius: 8, background: "white", border: "1px solid #EBEBEB", cursor: "pointer" }}
-        >
-          <MessageSquare size={18} color="#1A1A1A" strokeWidth={2} />
-        </div>
-        <div 
-          onClick={() => alert("Search functionality coming soon!")}
-          style={{ padding: 6, borderRadius: 8, background: "white", border: "1px solid #EBEBEB", cursor: "pointer" }}
-        >
-          <Search size={18} color="#1A1A1A" strokeWidth={2} />
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#FEF2F2")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = C.bg)}
+            title="Sign Out"
+          >
+            <LogOut size={18} />
+          </button>
         </div>
       </div>
+
+      <style>{`
+        @media (min-width: 1025px) {
+          .ds-hamburger { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

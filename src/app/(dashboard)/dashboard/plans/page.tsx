@@ -1,322 +1,251 @@
 "use client";
-
-import React, { useState } from "react";
-import { Check, X, Download } from "lucide-react";
-import Card from "@/components/ui/Card";
+import React from "react";
 import C from "@/constants/colors";
+import { Check, Sparkles, Zap, ShieldCheck, ArrowRight } from "lucide-react";
+import { PLAN_LIMITS, PLAN_PRICES, PlanType } from "@/constants/planLimits";
 
 export default function PlansPage() {
-  const [isYearly, setIsYearly] = useState(false);
+  const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'yearly'>('monthly');
+  // Mock current user plan (will be replaced with real data later)
+  const currentPlan: PlanType = 'basic';
 
-  const billingPrice = (price: number, id: string) => {
-    if (price === 0) return 0;
-    if (!isYearly) return price;
-    if (id === "pro") return 119; // $1430 / 12 ≈ 119
-    if (id === "premium") return 199; // $2390 / 12 ≈ 199
-    return Math.round(price * 0.8);
+  const calculatePrice = (monthlyPrice: number) => {
+    if (billingCycle === 'yearly') {
+      return Math.floor(monthlyPrice * 0.8); // 20% discount
+    }
+    return monthlyPrice;
   };
 
   const plans = [
     {
-      id: "free",
-      name: "FREE",
+      type: 'basic' as PlanType,
+      name: "Basic",
       price: 0,
-      description: "Self-serve trial — feel the value before you commit.",
-      color: C.teal,
+      description: "Ideal for beginners starting their job search.",
       features: [
-        "20 job applications / month",
-        "12 ATS resume versions",
+        "20 Job Applications/month",
+        "12 ATS Resume Versions",
+        "Real-time Job Tracker",
+        "Basic Search Filters",
       ],
-      missing: [
-        "Custom cover letters",
-        "Profile optimization",
-        "Mock interviews",
-        "OA support",
-        "Mentorship",
-      ],
+      icon: <Zap size={24} color="#64748B" />,
+      highlight: false,
     },
     {
-      id: "pro",
-      name: "PRO",
-      price: 149,
-      description: "Done-for-you applications with full profile optimization.",
-      color: C.teal,
-      active: true,
+      type: 'pro' as PlanType,
+      name: "Pro",
+      price: PLAN_PRICES.pro,
+      description: "Done-for-you automation for serious applicants.",
       features: [
-        "100 applications / month (done for you)",
-        "25–30 ATS resume versions",
-        "Tailored cover letters per role",
-        "LinkedIn + GitHub optimization",
-        "Application tracking dashboard",
-        "10 mock interview sessions",
-        "Priority support",
+        "100 Job Applications (Done-for-you)",
+        "30 ATS Resume Versions",
+        "Tailored Cover Letters",
+        "10 Mock Interview Sessions",
+        "Priority Support",
       ],
-      missing: [
-        "OA support",
-        "Mentorship",
-        "Placement guarantee",
-      ],
+      icon: <Sparkles size={24} color="#F59E0B" />,
+      highlight: true,
+      badge: "Most Popular",
     },
     {
-      id: "premium",
-      name: "PREMIUM",
-      price: 249,
-      description: "White-glove service — from application to offer letter.",
-      color: "#7C6FE0",
+      type: 'premium' as PlanType,
+      name: "Premium",
+      price: PLAN_PRICES.premium,
+      description: "The ultimate concierge placement suite.",
       features: [
-        "Unlimited applications / month",
-        "Unlimited resume versions",
-        "Tailored cover letters per role",
-        "Full profile suite (LinkedIn, GitHub, Portfolio)",
-        "Unlimited mock interviews",
-        "Online assessment (OA) support ",
-        "1-on-1 mentorship sessions ",
-        "Dedicated human advisor",
-        "Internship access",
-        "Placement guarantee",
+        "Unlimited Applications",
+        "Unlimited Resume Versions",
+        "Full Profile Suite (LinkedIn, Portfolio)",
+        "Unlimited Mock Interviews",
+        "Online Assessment (OA) Support",
+        "1-on-1 Mentorship Sessions",
+        "Placement Guarantee",
       ],
-      missing: [],
+      icon: <ShieldCheck size={24} color={C.teal} />,
+      highlight: false,
     },
   ];
 
   return (
-    <div>
-      <div style={{ marginBottom: 26 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: C.text }}>My Plan</h1>
-        <p style={{ color: C.muted, marginTop: 4 }}>
-          You are on the <strong>Pro Plan</strong>. Upgrade anytime.
+    <div style={{ maxWidth: 1100, margin: "0 auto", paddingBottom: 60 }}>
+      {/* Header */}
+      <div style={{ textAlign: "center", marginBottom: 30 }}>
+        <h1 style={{ fontSize: 36, fontWeight: 800, color: C.text, letterSpacing: "-0.03em" }}>
+          Choose Your Career Velocity
+        </h1>
+        <p style={{ color: C.muted, fontSize: 16, marginTop: 12, maxWidth: 600, margin: "12px auto" }}>
+          Select the perfect plan to accelerate your job search and landing your dream offer with Nexvelt AI.
         </p>
-      </div>
 
-      {/* Active plan banner */}
-      <div
-        style={{
-          background: `linear-gradient(135deg, ${C.sidebar}, #1a3a6b)`,
-          borderRadius: 16,
-          padding: "20px 22px",
-          marginBottom: 26,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 14,
-        }}
-      >
-        <div>
-          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, letterSpacing: "0.08em" }}>CURRENT PLAN</p>
-          <h2 style={{ color: "white", fontSize: 20, fontWeight: 800, marginTop: 4 }}>Pro Plan — ${isYearly ? "1,430/yr" : "149/mo"}</h2>
-          <p style={{ color: C.teal, fontSize: 13, marginTop: 4 }}>45 days remaining · Renews Apr 30, 2026</p>
-        </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button
+        {/* Billing Switcher */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginTop: 40 }}>
+          <span style={{ fontSize: 14, fontWeight: billingCycle === 'monthly' ? 700 : 500, color: billingCycle === 'monthly' ? C.text : C.muted }}>Monthly</span>
+          <button 
+            onClick={() => setBillingCycle(prev => prev === 'monthly' ? 'yearly' : 'monthly')}
             style={{
-              padding: "9px 18px",
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.2)",
-              background: "transparent",
-              color: "white",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            style={{
-              padding: "9px 18px",
-              borderRadius: 10,
+              width: 50,
+              height: 26,
+              borderRadius: 99,
               background: C.teal,
-              border: "none",
-              color: "white",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Upgrade to Premium
-          </button>
-        </div>
-      </div>
-
-      {/* Billing toggle to match dashboard style */}
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
-        <div style={{ background: C.white, padding: 4, borderRadius: 12, border: `1px solid ${C.border}`, display: "flex", gap: 4 }}>
-          <button
-            onClick={() => setIsYearly(false)}
-            style={{
-              padding: "6px 16px",
-              borderRadius: 8,
-              fontSize: 12,
-              fontWeight: 700,
-              background: !isYearly ? C.teal : "transparent",
-              color: !isYearly ? "white" : C.muted,
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setIsYearly(true)}
-            style={{
-              padding: "6px 16px",
-              borderRadius: 8,
-              fontSize: 12,
-              fontWeight: 700,
-              background: isYearly ? C.teal : "transparent",
-              color: isYearly ? "white" : C.muted,
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 6
-            }}
-          >
-            Yearly
-            <span style={{ background: "#DCFCE7", color: C.success, fontSize: 9, padding: "2px 6px", borderRadius: 999 }}>Save 20%</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Plan cards - Restored to original UI structure */}
-      <div className="plan-grid" style={{ 
-        display: "grid", 
-        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", 
-        gap: 20,
-        marginBottom: 28 
-      }}>
-        {plans.map((p) => (
-          <div
-            key={p.id}
-            style={{
-              background: C.white,
-              borderRadius: 16,
-              padding: 22,
-              border: p.active ? `2px solid ${p.color}` : `1px solid ${C.border}`,
-              boxShadow: p.active
-                ? `0 10px 30px -10px ${p.color}33`
-                : "0 1px 3px rgba(0,0,0,0.06)",
               position: "relative",
+              border: "none",
+              cursor: "pointer",
+              padding: 0
             }}
           >
-            {p.active && (
+            <div 
+              style={{ 
+                width: 20, 
+                height: 20, 
+                borderRadius: "50%", 
+                background: "white", 
+                position: "absolute",
+                top: 3,
+                left: billingCycle === 'monthly' ? 3 : 27,
+                transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
+              }}
+            />
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 14, fontWeight: billingCycle === 'yearly' ? 700 : 500, color: billingCycle === 'yearly' ? C.text : C.muted }}>Yearly</span>
+            <span style={{ 
+              background: "#ECFDF5", 
+              color: C.teal, 
+              padding: "2px 8px", 
+              borderRadius: 99, 
+              fontSize: 11, 
+              fontWeight: 800 
+            }}>
+              SAVE 20%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Plans Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 30 }}>
+        {plans.map((plan) => (
+          <div
+            key={plan.type}
+            style={{
+              background: "#FFFFFF",
+              borderRadius: 24,
+              padding: "40px 32px",
+              border: plan.highlight ? `2px solid ${C.teal}` : `1px solid ${C.border}`,
+              boxShadow: plan.highlight ? "0 20px 40px rgba(45, 212, 167, 0.1)" : "0 4px 6px rgba(0,0,0,0.02)",
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              transition: "transform 0.3s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-8px)")}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+          >
+            {plan.badge && (
               <div
                 style={{
                   position: "absolute",
                   top: -12,
                   left: "50%",
                   transform: "translateX(-50%)",
-                  background: p.color,
+                  background: C.teal,
                   color: "white",
-                  fontSize: 10,
-                  fontWeight: 700,
-                  padding: "3px 12px",
-                  borderRadius: 999,
-                  whiteSpace: "nowrap",
+                  padding: "4px 16px",
+                  borderRadius: 99,
+                  fontSize: 12,
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
                 }}
               >
-                CURRENT PLAN
+                {plan.badge}
               </div>
             )}
-            <h3 style={{ fontWeight: 800, fontSize: 18, color: C.text }}>{p.name}</h3>
-            <p style={{ fontSize: 12, color: C.muted, margin: "4px 0 12px" }}>{p.description}</p>
-            <div style={{ margin: "8px 0 16px" }}>
-              <span style={{ fontSize: 26, fontWeight: 800, color: C.text }}>${billingPrice(p.price, p.id)}</span>
-              <span style={{ color: C.muted, fontSize: 13 }}>/{isYearly ? "mo" : "mo"}</span>
-              {isYearly && p.price > 0 && (
-                <p style={{ fontSize: 11, color: C.success, fontWeight: 600, marginTop: 2 }}>
-                  ${p.id === "pro" ? "1,430" : "2,390"} billed annually
+
+            <div style={{ marginBottom: 24 }}>
+              <div
+                style={{
+                  width: 54,
+                  height: 54,
+                  borderRadius: 16,
+                  background: plan.highlight ? "#F0FDFA" : "#F8FAFC",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 20,
+                }}
+              >
+                {plan.icon}
+              </div>
+              <h2 style={{ fontSize: 24, fontWeight: 800, color: C.text }}>{plan.name}</h2>
+              <p style={{ color: C.muted, fontSize: 14, marginTop: 8 }}>{plan.description}</p>
+            </div>
+
+            <div style={{ marginBottom: 32 }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                <span style={{ fontSize: 40, fontWeight: 800, color: C.text }}>${calculatePrice(plan.price)}</span>
+                <span style={{ color: C.muted, fontSize: 14 }}>/mo</span>
+              </div>
+              {billingCycle === 'yearly' && plan.price > 0 && (
+                <p style={{ color: C.teal, fontSize: 11, fontWeight: 700, marginTop: 4 }}>
+                  Billed annually (${calculatePrice(plan.price) * 12}/year)
                 </p>
               )}
             </div>
 
-            <div style={{ marginBottom: 16, borderTop: `1px solid ${C.border}`, paddingTop: 16 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: C.muted, marginBottom: 12, letterSpacing: "0.05em" }}>
-                {p.id === "premium" ? "EVERYTHING IN PRO, PLUS" : "WHAT'S INCLUDED"}
-              </p>
-              {p.features.map((f, i) => (
-                <div key={i} style={{ display: "flex", gap: 8, alignItems: "start", marginBottom: 7 }}>
-                  <Check size={14} color={p.color} strokeWidth={3} style={{ marginTop: 2 }} />
-                  <span style={{ fontSize: 13, color: C.text }}>{f}</span>
-                </div>
-              ))}
-              {p.missing.map((f, i) => (
-                <div key={i} style={{ display: "flex", gap: 8, alignItems: "start", marginBottom: 7, opacity: 0.4 }}>
-                  <X size={14} color={C.muted} style={{ marginTop: 2 }} />
-                  <span style={{ fontSize: 13, color: C.muted }}>{f}</span>
-                </div>
-              ))}
+            <div style={{ flex: 1, marginBottom: 40 }}>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 14 }}>
+                {plan.features.map((feature, i) => (
+                  <li key={i} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 14, color: "#475569" }}>
+                    <div
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        background: plan.highlight ? "#ECFDF5" : "#F1F5F9",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Check size={12} color={plan.highlight ? C.teal : "#64748B"} strokeWidth={3} />
+                    </div>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
             </div>
 
             <button
               style={{
                 width: "100%",
-                padding: "12px",
-                borderRadius: 10,
-                marginTop: "auto",
-                background: p.active ? p.color : "transparent",
-                border: `1.5px solid ${p.color}`,
-                color: p.active ? "white" : p.color,
-                fontSize: 13,
+                padding: "16px",
+                borderRadius: 14,
+                fontSize: 15,
                 fontWeight: 700,
-                cursor: p.active ? "default" : "pointer",
-                transition: "all 0.2s"
+                cursor: "pointer",
+                transition: "all 0.2s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                background: currentPlan === plan.type ? "#F8FAFC" : plan.highlight ? C.teal : "#0F172A",
+                color: currentPlan === plan.type ? "#64748B" : "white",
+                border: "none",
+                pointerEvents: currentPlan === plan.type ? "none" : "auto",
               }}
             >
-              {p.active ? "Current Plan" : p.id === "premium" ? "Upgrade ↑" : "Select"}
+              {currentPlan === plan.type ? "Current Plan" : (
+                <>
+                  Get Started <ArrowRight size={16} />
+                </>
+              )}
             </button>
           </div>
         ))}
       </div>
-
-      {/* Payment history - Restored original style */}
-      <Card>
-        <h3 style={{ fontWeight: 700, fontSize: 15, color: C.text, marginBottom: 16 }}>Payment History</h3>
-        {([].length === 0) ? (
-          <div style={{ padding: "16px 0", textAlign: "center", color: C.muted, fontSize: 14 }}>
-            No payment history available.
-          </div>
-        ) : (
-          [].map((p: any, i, arr) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 0",
-                borderBottom: i < arr.length - 1 ? `1px solid ${C.border}` : "none",
-                flexWrap: "wrap",
-                gap: 8,
-              }}
-            >
-              <div>
-                <p style={{ fontWeight: 600, fontSize: 14, color: C.text }}>{p.plan}</p>
-                <p style={{ fontSize: 12, color: C.muted }}>{p.date}</p>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                <span style={{ fontWeight: 700, color: C.text }}>{p.amount}</span>
-                <span
-                  style={{
-                    background: "#F0FDF4",
-                    color: C.success,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    padding: "2px 10px",
-                    borderRadius: 999,
-                  }}
-                >
-                  Paid
-                </span>
-                <button style={{ background: "none", border: "none", cursor: "pointer", color: C.muted }}>
-                  <Download size={15} />
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </Card>
     </div>
   );
 }

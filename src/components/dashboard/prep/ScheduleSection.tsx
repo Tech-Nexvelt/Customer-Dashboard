@@ -3,8 +3,30 @@ import React from "react";
 import CalendarGrid from "./CalendarGrid";
 import EventCard from "./EventCard";
 import { EventData } from "@/types/dashboard";
+import C from "@/constants/colors";
 
-const EVENTS: EventData[] = [];
+const EVENTS: EventData[] = [
+  {
+    title: "Project Review",
+    day: "16",
+    month: "April",
+    tag: "Internal",
+    tagType: "private",
+    barColor: C.purple,
+    daysLeft: 1,
+    barPercent: 80
+  },
+  {
+    title: "Spotify Technical",
+    day: "17",
+    month: "April",
+    tag: "External",
+    tagType: "public",
+    barColor: C.teal,
+    daysLeft: 2,
+    barPercent: 40
+  }
+];
 
 export default function ScheduleSection() {
   return (
@@ -21,7 +43,7 @@ export default function ScheduleSection() {
         <CalendarGrid />
       </div>
 
-      <div className="event-cards-grid">
+      <div className="event-cards-grid" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {EVENTS.map((e, i) => (
           <EventCard key={i} {...e} />
         ))}

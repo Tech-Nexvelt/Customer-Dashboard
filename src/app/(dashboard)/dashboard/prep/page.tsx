@@ -21,6 +21,17 @@ const sessions = [
 
 export default function PrepPage() {
   return (
+    <div style={{ padding: 40, textAlign: 'center', background: 'white', borderRadius: 24, border: `1px solid ${C.border}` }}>
+      <BookOpen size={48} color={C.teal} style={{ margin: '0 auto 20px' }} />
+      <h1 style={{ fontSize: 24, fontWeight: 800, color: C.text }}>Interview Prep & Resources</h1>
+      <p style={{ color: C.muted, marginTop: 8 }}>We are curating high-impact technical and behavioral resources specifically for your target domain. Access arriving soon!</p>
+    </div>
+  );
+}
+
+/*
+export default function PrepPageFull() {
+  return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 26, flexWrap: "wrap", gap: 14 }}>
         <div>
@@ -47,7 +58,6 @@ export default function PrepPage() {
       </div>
 
       <div className="two-col" style={{ marginBottom: 20 }}>
-        {/* Topic Progress */}
         <Card>
           <h3 style={{ fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 20 }}>Technical Proficiency</h3>
           {topics.map((t, i) => (
@@ -58,7 +68,7 @@ export default function PrepPage() {
                   <span style={{ fontSize: 11, color: C.muted, marginLeft: 8 }}>• {t.difficulty}</span>
                 </div>
                 <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>
-                  {t.solved}/{t.total}
+                   {t.solved}/{t.total}
                 </span>
               </div>
               <ProgressBar value={t.progress} color={t.progress > 80 ? C.teal : t.progress > 40 ? C.blue : C.yellow} height={8} />
@@ -66,7 +76,6 @@ export default function PrepPage() {
           ))}
         </Card>
 
-        {/* Practice Sessions */}
         <Card>
           <h3 style={{ fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 20 }}>Live Sessions</h3>
           {sessions.map((s, i) => (
@@ -121,7 +130,6 @@ export default function PrepPage() {
         </Card>
       </div>
 
-      {/* Resources */}
       <Card>
         <h3 style={{ fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 16 }}>Curated Resources</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
@@ -140,8 +148,6 @@ export default function PrepPage() {
                 cursor: "pointer",
                 transition: "transform 0.15s",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
             >
               <Chip label={r.tag} color={r.color} />
               <h4 style={{ fontSize: 15, fontWeight: 700, color: C.text, marginTop: 12, lineHeight: 1.4 }}>{r.title}</h4>
@@ -155,3 +161,4 @@ export default function PrepPage() {
     </div>
   );
 }
+*/

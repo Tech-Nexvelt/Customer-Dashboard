@@ -10,6 +10,10 @@ interface DashboardContextType {
   closeTab: (id: number) => void;
   addTab: (name: string, href: string, color?: string) => number;
   setActiveId: (id: number) => void;
+  unreadJobCount: number;
+  setUnreadJobCount: React.Dispatch<React.SetStateAction<number>>;
+  totalJobCount: number;
+  setTotalJobCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);

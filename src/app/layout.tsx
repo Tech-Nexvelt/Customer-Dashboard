@@ -8,8 +8,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Nexvelt | Modern Management",
-  description: "Next-gen management platform.",
+  title: "Nexvelt | Done-For-You Job Search",
+  description: "Automate your job search and internal funnel with Nexvelt.",
+  icons: {
+    icon: "/NV-logo-short.png",
+    apple: "/NV-logo-short.png",
+  },
 };
 
 export default function RootLayout({

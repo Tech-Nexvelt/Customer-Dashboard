@@ -3,6 +3,7 @@ import React from "react";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Tab } from "@/types/dashboard";
+import C from "@/constants/colors";
 
 interface TabBarProps {
   tabs: Tab[];
@@ -23,15 +24,13 @@ export default function TabBar({ tabs, activeId, onSwitch, onClose, onAdd }: Tab
   return (
     <div
       style={{
-        height: 54,
-        background: "#F0F0EC",
+        height: 56,
+        background: "transparent",
         display: "flex",
         alignItems: "center",
-        borderBottom: "1px solid #EBEBEB",
         overflowX: "auto",
-        flexShrink: 0,
         scrollbarWidth: "none",
-        paddingLeft: 12,
+        padding: "0 16px",
         gap: 8,
       }}
     >
@@ -45,23 +44,25 @@ export default function TabBar({ tabs, activeId, onSwitch, onClose, onAdd }: Tab
               display: "flex",
               alignItems: "center",
               gap: 8,
-              padding: "0 12px 0 10px",
+              padding: "0 14px",
               height: 38,
               cursor: "pointer",
-              background: isActive ? "#FFFFFF" : "rgba(255,255,255,0.4)",
-              borderRadius: 12,
+              background: isActive ? C.white : "transparent",
+              borderRadius: 14,
               fontSize: 13,
-              fontWeight: isActive ? 600 : 500,
-              color: isActive ? "#1A1A1A" : "#6B7280",
+              fontWeight: isActive ? 700 : 500,
+              color: isActive ? C.text : C.muted,
               userSelect: "none",
               whiteSpace: "nowrap",
-              flexShrink: 0,
-              position: "relative",
-              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-              boxShadow: isActive ? "0 2px 6px rgba(0,0,0,0.06)" : "none",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              border: isActive ? `1px solid ${C.border}` : "1px solid transparent",
+              boxShadow: isActive ? "0 4px 12px rgba(0,0,0,0.05)" : "none",
             }}
           >
-            <span style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis" }}>
+            {isActive && (
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.teal }} />
+            )}
+            <span style={{ maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis" }}>
               {tab.name}
             </span>
             {tabs.length > 1 && (
@@ -71,16 +72,17 @@ export default function TabBar({ tabs, activeId, onSwitch, onClose, onAdd }: Tab
                   onClose(tab.id);
                 }}
                 style={{ 
-                  width: 14, 
-                  height: 14, 
-                  borderRadius: "50%", 
-                  background: isActive ? "#F0F0EC" : "rgba(0,0,0,0.05)", 
+                  width: 18, 
+                  height: 18, 
+                  borderRadius: 6, 
+                  background: isActive ? C.bg : "transparent", 
                   display: "flex", 
                   alignItems: "center", 
                   justifyContent: "center", 
-                  fontSize: 8, 
-                  color: "#9CA3AF",
+                  fontSize: 9, 
+                  color: C.light_text,
                   marginLeft: 4,
+                  transition: "background 0.2s",
                 }}
               >
                 ✕
@@ -92,19 +94,18 @@ export default function TabBar({ tabs, activeId, onSwitch, onClose, onAdd }: Tab
       <button
         onClick={onAdd}
         style={{
-          width: 32,
-          height: 32,
-          borderRadius: "50%",
-          background: "rgba(255,255,255,0.5)",
-          border: "none",
+          width: 34,
+          height: 34,
+          borderRadius: 12,
+          background: C.bg,
+          border: `1px solid ${C.border}`,
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#9CA3AF",
-          flexShrink: 0,
+          color: C.muted,
           marginLeft: 4,
-          transition: "background 0.2s",
+          transition: "all 0.2s",
         }}
       >
         <Plus size={16} />

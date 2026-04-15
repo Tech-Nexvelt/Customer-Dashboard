@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Send, Image, Paperclip, MoreHorizontal, Phone, Video } from "lucide-react";
+import { Send, Image, Paperclip } from "lucide-react";
 import Card from "@/components/ui/Card";
 import Avatar from "@/components/ui/Avatar";
 import C from "@/constants/colors";
@@ -45,30 +45,9 @@ export default function ChatPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Avatar name="T" size={40} online />
             <div>
-              <p style={{ fontWeight: 800, fontSize: 16, color: C.text }}>Success Team</p>
+              <p style={{ fontWeight: 800, fontSize: 16, color: C.text }}>Support Team</p>
               <p style={{ fontSize: 12, color: C.success, fontWeight: 600 }}>Available for support</p>
             </div>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {[Phone, Video, MoreHorizontal].map((Icon, i) => (
-              <button
-                key={i}
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 10,
-                  background: C.light,
-                  border: "none",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: C.muted,
-                }}
-              >
-                <Icon size={18} />
-              </button>
-            ))}
           </div>
         </div>
 
@@ -80,7 +59,7 @@ export default function ChatPage() {
                 <Send size={24} color={C.muted} />
               </div>
               <p style={{ fontSize: 14, color: C.text, fontWeight: 600 }}>No messages yet</p>
-              <p style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Your conversation with the success team will appear here.</p>
+              <p style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Your conversation with the support team will appear here.</p>
             </div>
           ) : (
             messages.map((m: any) => {
@@ -151,7 +130,7 @@ export default function ChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder="Message your success team..."
+              placeholder="Message your support team..."
               style={{
                 flex: 1,
                 border: "none",

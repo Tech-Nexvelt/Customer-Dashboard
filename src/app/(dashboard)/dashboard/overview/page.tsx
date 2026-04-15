@@ -2,7 +2,6 @@
 import C from "@/constants/colors";
 import StatCardsRow from "@/components/dashboard/overview/StatCardsRow";
 import AssignmentsRow from "@/components/dashboard/prep/AssignmentsRow";
-import ScheduleSection from "@/components/dashboard/prep/ScheduleSection";
 
 export default function OverviewPage() {
   return (
@@ -24,8 +23,8 @@ export default function OverviewPage() {
       {/* ── Assignments Row ── */}
       <AssignmentsRow />
 
-      {/* ── Schedule + Event Cards ── */}
-      <ScheduleSection />
+      {/* ── Schedule + Event Cards (Commented out for now) ── */}
+      {/* <ScheduleSection /> */}
     </div>
   );
 }

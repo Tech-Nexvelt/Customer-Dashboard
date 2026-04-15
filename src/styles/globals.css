@@ -1,137 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 :root {
-  --font-display: 'Instrument Serif', serif;
-  --font-body: 'Outfit', sans-serif;
-  
   --brand-teal: #2DD4A7;
-  --brand-teal-deep: #25b58e;
-  --brand-purple: #7C6FE0;
   --brand-dark: #0F172A;
-  
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #94A3B8;
-  
-  --bg-white: #FFFFFF;
-  --bg-ghost: #F8FAFC;
-  --border-subtle: #F1F5F9;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 5rem;
+  --brand-light: #F8FAFC;
 }
 
 body {
-  font-family: var(--font-body), -apple-system, sans-serif;
-  background: var(--bg-white);
-  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--brand-light);
+  color: var(--brand-dark);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
 }
 
-/* ── Typography helpers ── */
-.text-premium {
-  font-family: var(--font-display);
-  font-style: italic;
-  letter-spacing: -0.01em;
-}
-
-.heading-hero {
-  @apply text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[1.05] text-slate-900;
-}
-
-.heading-section {
-  @apply text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 leading-tight;
-}
-
-.heading-card {
-  @apply text-xl sm:text-2xl font-bold tracking-tight text-slate-900;
-}
-
-/* ── Layered Premium Shadows (v4 Utilities) ── */
-@utility shadow-premium-sm {
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.02), 0 1px 2px -1px rgb(0 0 0 / 0.02);
-}
-
+/* --- Premium Utilities --- */
 @utility shadow-premium {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.08);
 }
 
-@utility shadow-premium-xl {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08),
-              0 0 0 1px rgba(0, 0, 0, 0.01);
+@utility shadow-teal {
+  box-shadow: 0 10px 30px -5px rgba(45, 212, 167, 0.3);
 }
 
-@utility shadow-glow-teal {
-  box-shadow: 0 0 25px -5px rgba(45, 212, 167, 0.4);
+@utility glass-nav {
+  @apply bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-50;
 }
 
-@utility shadow-glow-purple {
-  box-shadow: 0 0 25px -5px rgba(124, 111, 224, 0.4);
+.pill-button {
+  @apply rounded-full px-8 py-3.5 font-bold transition-all duration-300 active:scale-95;
 }
 
-/* ── Interactive Elements ── */
-.glass-card {
-  @apply bg-white/70 backdrop-blur-xl border border-white shadow-premium;
-}
-
-.glass-nav {
-  @apply bg-white/80 backdrop-blur-lg border-b border-slate-100/50 sticky top-0 z-50;
-}
-
-/* ── Animations ── */
-@keyframes section-reveal {
-  from { opacity: 0; transform: translateY(30px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.reveal {
-  animation: section-reveal 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+.card-float {
+  @apply bg-white rounded-[32px] p-10 border border-slate-100 shadow-premium hover:shadow-2xl hover:-translate-y-1 transition-all duration-500;
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
+  50% { transform: translateY(-20px); }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { 
-  background: #E2E8F0; 
-  border-radius: 10px; 
-  border: 3px solid white;
-}
-::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
-
-/* Global buttons */
-.btn-primary {
-  @apply bg-[#2DD4A7] text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300
-         hover:bg-[#25b58e] hover:shadow-glow-teal hover:scale-[1.02] active:scale-[0.98]
-         flex items-center justify-center gap-2;
-}
-
-.btn-secondary {
-  @apply bg-white text-slate-700 font-bold py-4 px-8 rounded-2xl border border-slate-200 
-         transition-all duration-300 hover:bg-slate-50 hover:border-slate-300 hover:scale-[1.02] active:scale-[0.98]
-         flex items-center justify-center gap-2;
-}
-
-.badge-premium {
-  @apply inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-50 border border-slate-200/60 
-         text-slate-500 text-[11px] font-bold uppercase tracking-wider shadow-sm;
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

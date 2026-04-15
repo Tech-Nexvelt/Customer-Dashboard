@@ -1,11 +1,10 @@
 "use client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { weeklyData } from "@/data/mockJobs";
 
-export default function WeeklyBarChart() {
+export default function WeeklyBarChart({ data = [] }: { data?: any[] }) {
   return (
     <ResponsiveContainer width="100%" height={170}>
-      <BarChart data={weeklyData} barSize={28}>
+      <BarChart data={data} barGap={4} barSize={12}>
         <XAxis
           dataKey="week"
           axisLine={false}
@@ -15,14 +14,17 @@ export default function WeeklyBarChart() {
         <YAxis hide />
         <Tooltip
           contentStyle={{
-            borderRadius: 10,
+            borderRadius: 12,
             border: "none",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-            fontSize: 13,
+            boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+            fontSize: 12,
+            fontWeight: 600,
+            color: "#1E293B"
           }}
-          cursor={{ fill: "#00C89610" }}
+          cursor={{ fill: "#F1F5F9" }}
         />
-        <Bar dataKey="applied" fill="#00C896" radius={[6, 6, 0, 0]} />
+        <Bar dataKey="found" fill="#64748B80" radius={[4, 4, 0, 0]} name="Found" />
+        <Bar dataKey="applied" fill="#2DD4BF" radius={[4, 4, 0, 0]} name="Applied" />
       </BarChart>
     </ResponsiveContainer>
   );

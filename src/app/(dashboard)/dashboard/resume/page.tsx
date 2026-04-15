@@ -6,6 +6,17 @@ import C from "@/constants/colors";
 
 export default function ResumePage() {
   return (
+    <div style={{ padding: 40, textAlign: 'center', background: 'white', borderRadius: 24, border: `1px solid ${C.border}` }}>
+      <FileText size={48} color={C.teal} style={{ margin: '0 auto 20px' }} />
+      <h1 style={{ fontSize: 24, fontWeight: 800, color: C.text }}>Resume & Portfolio</h1>
+      <p style={{ color: C.muted, marginTop: 8 }}>This section is currently under optimization for your specific career domain. Check back soon!</p>
+    </div>
+  );
+}
+
+/*
+export default function ResumePageFull() {
+  return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 26, flexWrap: "wrap", gap: 14 }}>
         <div>
@@ -32,7 +43,6 @@ export default function ResumePage() {
       </div>
 
       <div className="two-col" style={{ marginBottom: 20 }}>
-        {/* ATS Score */}
         <Card style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "30px 20px" }}>
           <h3 style={{ fontWeight: 700, fontSize: 15, color: C.text, marginBottom: 20 }}>ATS Score Analysis</h3>
           <ATSGauge score={87} size={150} />
@@ -44,7 +54,6 @@ export default function ResumePage() {
           </div>
         </Card>
 
-        {/* Portfolio Status */}
         <Card style={{ padding: "30px 20px" }}>
           <h3 style={{ fontWeight: 700, fontSize: 15, color: C.text, marginBottom: 20 }}>Portfolio Website</h3>
           <div
@@ -86,7 +95,6 @@ export default function ResumePage() {
         </Card>
       </div>
 
-      {/* Resume versions */}
       <Card>
         <h3 style={{ fontWeight: 700, fontSize: 15, color: C.text, marginBottom: 16 }}>Resume Versions</h3>
         {[
@@ -180,3 +188,4 @@ export default function ResumePage() {
     </div>
   );
 }
+*/

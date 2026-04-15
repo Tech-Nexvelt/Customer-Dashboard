@@ -2,8 +2,15 @@
 import { useState } from "react";
 import { initialMessages } from "@/data/mockMessages";
 
+interface Message {
+  id: number;
+  from: string;
+  text: string;
+  time: string;
+}
+
 export function useChat() {
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [newMessage, setNewMessage] = useState("");
 
   const sendMessage = () => {
