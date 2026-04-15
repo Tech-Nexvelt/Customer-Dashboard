@@ -11,7 +11,7 @@ export default function JobsPage() {
     <div>
       <div style={{ marginBottom: 26 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: C.text }}>Job Tracker</h1>
-        <p style={{ color: C.muted, marginTop: 4 }}>Track your applications managed by DevSphere.</p>
+        <p style={{ color: C.muted, marginTop: 4 }}>Track your applications managed by Nexvelt.</p>
       </div>
 
       <div className="two-col" style={{ marginBottom: 20 }}>

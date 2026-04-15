@@ -10,7 +10,7 @@ export default function ResumePage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 26, flexWrap: "wrap", gap: 14 }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800, color: C.text }}>Resume & Portfolio</h1>
-          <p style={{ color: C.muted, marginTop: 4 }}>Last updated by DevSphere on March 12, 2026</p>
+          <p style={{ color: C.muted, marginTop: 4 }}>Last updated by Nexvelt on March 12, 2026</p>
         </div>
         <button
           style={{
@@ -76,8 +76,8 @@ export default function ResumePage() {
             >
               <Share2 size={18} />
             </div>
-            <p style={{ fontWeight: 700, fontSize: 14, color: C.text }}>portfolio-sayyad.devsphere.me</p>
-            <p style={{ color: C.muted, fontSize: 12, marginTop: 4 }}>Site is online and hosted by DevSphere</p>
+            <p style={{ fontWeight: 700, fontSize: 14, color: C.text }}>portfolio-sayyad.nexvelt.me</p>
+            <p style={{ color: C.muted, fontSize: 12, marginTop: 4 }}>Site is online and hosted by Nexvelt</p>
             <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
               <button style={{ background: C.teal, color: "white", padding: "6px 14px", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: "pointer" }}>View Site</button>
               <button style={{ background: "white", color: C.text, padding: "6px 14px", border: `1px solid ${C.border}`, borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: "pointer" }}>Edit Details</button>
