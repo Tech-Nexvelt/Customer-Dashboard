@@ -1,8 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Toggle({ defaultOn = false, onChange }: { defaultOn?: boolean; onChange?: (on: boolean) => void }) {
   const [on, setOn] = useState(defaultOn);
+
+  useEffect(() => {
+    setOn(defaultOn);
+  }, [defaultOn]);
 
   const handleClick = () => {
     const next = !on;

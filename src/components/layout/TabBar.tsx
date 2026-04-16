@@ -2,6 +2,7 @@
 import React from "react";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Tab } from "@/types/dashboard";
 import C from "@/constants/colors";
 
@@ -37,9 +38,16 @@ export default function TabBar({ tabs, activeId, onSwitch, onClose, onAdd }: Tab
       {tabs.map((tab) => {
         const isActive = activeId === tab.id;
         return (
-          <div
+          <motion.div
             key={tab.id}
             onClick={() => handleSwitch(tab)}
+            initial={false}
+            animate={{
+              background: isActive ? C.white : "rgba(255,255,255,0)",
+              scale: isActive ? 1 : 0.98,
+            }}
+            whileHover={{ scale: 1.02, background: isActive ? C.white : "rgba(0,0,0,0.02)" }}
+            whileTap={{ scale: 0.96 }}
             style={{
               display: "flex",
               alignItems: "center",
@@ -47,20 +55,22 @@ export default function TabBar({ tabs, activeId, onSwitch, onClose, onAdd }: Tab
               padding: "0 14px",
               height: 38,
               cursor: "pointer",
-              background: isActive ? C.white : "transparent",
               borderRadius: 14,
               fontSize: 13,
               fontWeight: isActive ? 700 : 500,
               color: isActive ? C.text : C.muted,
               userSelect: "none",
               whiteSpace: "nowrap",
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
               border: isActive ? `1px solid ${C.border}` : "1px solid transparent",
               boxShadow: isActive ? "0 4px 12px rgba(0,0,0,0.05)" : "none",
             }}
           >
             {isActive && (
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.teal }} />
+              <motion.div 
+                layoutId="active-dot"
+                style={{ width: 6, height: 6, borderRadius: "50%", background: C.teal }} 
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              />
             )}
             <span style={{ maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis" }}>
               {tab.name}
@@ -88,7 +98,7 @@ export default function TabBar({ tabs, activeId, onSwitch, onClose, onAdd }: Tab
                 ✕
               </span>
             )}
-          </div>
+          </motion.div>
         );
       })}
       <button

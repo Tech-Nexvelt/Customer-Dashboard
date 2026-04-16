@@ -83,7 +83,8 @@ export default function SignupPage() {
           role,
           country,
           experience: experienceLevel,
-          work_type: workType
+          work_type: workType,
+          access_level: 'client'
         }], { onConflict: 'email' });
         
         if (insertError) {

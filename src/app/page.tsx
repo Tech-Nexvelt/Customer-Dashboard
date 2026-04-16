@@ -57,7 +57,7 @@ export default function LandingPage() {
               Log In
             </Link>
             <Link 
-              href="/signup" 
+              href="/onboarding" 
               className="pill-button bg-[#0F172A] text-white hover:bg-[#2DD4A7] hover:text-[#0F172A] text-[11px] uppercase tracking-[0.2em] flex items-center gap-2"
             >
               Get Started <ChevronRight size={14} strokeWidth={3} />
@@ -87,7 +87,7 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row items-center gap-5 justify-center lg:justify-start">
                 <Link 
-                  href="/signup" 
+                  href="/onboarding" 
                   className="pill-button bg-[#2DD4A7] text-[#0F172A] px-12 py-5 shadow-teal hover:scale-105 active:scale-95 text-xs uppercase tracking-[0.15em]"
                 >
                   Join The Search
@@ -313,7 +313,7 @@ export default function LandingPage() {
                          ))}
                       </ul>
 
-                      <Link href="/signup" className={`pill-button w-full text-center block text-[11px] uppercase tracking-[0.2em] ${p.active ? 'bg-[#2DD4A7] text-[#0F172A] shadow-teal' : 'bg-[#0F172A] text-white hover:bg-black'}`}>
+                      <Link href="/onboarding" className={`pill-button w-full text-center block text-[11px] uppercase tracking-[0.2em] ${p.active ? 'bg-[#2DD4A7] text-[#0F172A] shadow-teal' : 'bg-[#0F172A] text-white hover:bg-black'}`}>
                         Get Started
                       </Link>
                     </div>

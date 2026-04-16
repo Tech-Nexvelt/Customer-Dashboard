@@ -37,7 +37,7 @@ export default function PlansPage() {
       price: PLAN_PRICES.pro,
       description: "Done-for-you automation for serious applicants.",
       features: [
-        "100 Job Applications (Done-for-you)",
+        "300 Job Applications (Done-for-you)",
         "30 ATS Resume Versions",
         "Tailored Cover Letters",
         "10 Mock Interview Sessions",

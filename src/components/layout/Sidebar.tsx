@@ -1,18 +1,20 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
+import { motion } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  Home, Clock, ClipboardList, Bookmark, MessageCircle, BarChart2,
-  Sparkles, Timer, Settings, LucideIcon, Lock
+  Home, Clock, ClipboardList, Bookmark, BarChart2,
+  Sparkles, Timer, Settings, LucideIcon, Lock, Users
 } from "lucide-react";
 import { navItems, bottomNavItems } from "@/constants/navItems";
 import { NavItem } from "@/types/dashboard";
 import { useDashboard } from "@/lib/dashboard/dashboardContext";
 import { PlanType } from "@/constants/planLimits";
+import { useUser } from "@/features/auth/hooks/useUser";
 
 const iconMap: Record<string, LucideIcon> = {
-  Home, Clock, ClipboardList, Bookmark, MessageCircle, BarChart2,
-  Sparkles, Timer, Settings,
+  Home, Clock, ClipboardList, Bookmark, BarChart2,
+  Sparkles, Timer, Settings, Users,
 };
 
 import C from "@/constants/colors";
@@ -33,12 +35,18 @@ export default function Sidebar({ expanded = true }: { expanded?: boolean }) {
   const pathname = usePathname();
   const { addTab } = useDashboard();
   
+  const { user } = useUser();
+  const isAdmin = user?.accessLevel === 'admin';
+
+  const userName = user?.name || "User";
+
   // Mock plan for now
   const currentPlan: PlanType = "basic";
 
   const isLocked = (label: string) => {
     return currentPlan === "basic" && PREMIUM_FEATURES.includes(label);
   };
+
 
   const handleNav = (item: NavItem) => {
     if (isLocked(item.label)) {
@@ -50,6 +58,9 @@ export default function Sidebar({ expanded = true }: { expanded?: boolean }) {
   };
 
   const renderItem = (item: NavItem) => {
+    // Hide Admin Feed if user is not an admin
+    if (item.id === "admin" && !isAdmin) return null;
+
     const Icon = iconMap[item.icon];
     const active = pathname === item.href;
     const locked = isLocked(item.label);
@@ -58,11 +69,12 @@ export default function Sidebar({ expanded = true }: { expanded?: boolean }) {
       <div 
         key={item.id} 
         onClick={() => handleNav(item)} 
-        style={{ cursor: "pointer", width: "100%", padding: "2px 0", opacity: locked ? 0.7 : 1 }}
+        style={{ cursor: "pointer", width: "100%", paddingInline: 12, position: "relative", opacity: locked ? 0.7 : 1 }}
       >
         <div
           title={locked ? `${item.label} (Premium Feature)` : item.label}
           style={{
+            position: "relative",
             width: "100%",
             height: 44,
             borderRadius: 12,
@@ -70,11 +82,24 @@ export default function Sidebar({ expanded = true }: { expanded?: boolean }) {
             alignItems: "center",
             padding: expanded ? "0 14px" : "0",
             justifyContent: expanded ? "flex-start" : "center",
-            background: active ? C.iconActiveBg : "transparent",
-            transition: "all 0.2s",
             gap: 12,
+            zIndex: 1,
+            color: active ? C.text : C.muted,
           }}
         >
+          {active && (
+            <motion.div
+              layoutId="sidebar-active"
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: C.iconActiveBg,
+                borderRadius: 12,
+                zIndex: -1,
+              }}
+              transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+            />
+          )}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 34 }}>
             {Icon && <Icon size={20} color={active ? C.teal : C.iconInactive} strokeWidth={active ? 2.5 : 2} />}
           </div>
@@ -84,7 +109,6 @@ export default function Sidebar({ expanded = true }: { expanded?: boolean }) {
               <span style={{ 
                 fontSize: 14, 
                 fontWeight: active ? 700 : 500, 
-                color: active ? C.text : C.muted,
                 marginTop: 1
               }}>
                 {item.label}
@@ -173,14 +197,14 @@ export default function Sidebar({ expanded = true }: { expanded?: boolean }) {
             }}
           >
             <img 
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Kishore" 
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}`} 
               alt="User" 
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </div>
           {expanded && (
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Kishore Ch</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
               <p style={{ fontSize: 11, fontWeight: 500, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Unlock Premium</p>
             </div>
           )}

@@ -1,7 +1,10 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { Mic, Link2, Sparkles } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient"
 import C from "@/constants/colors";
+import { useUser } from "@/features/auth/hooks/useUser";
+import { chatWithAria } from "@/lib/ai/chat";
 
 interface AIChipProps {
   icon: string;
@@ -41,46 +44,95 @@ function AIChip({ icon, label, onClick, color, textColor }: AIChipProps) {
 interface Message {
   role: "user" | "ai";
   text: string;
+  suggestedReplies?: string[];
 }
 
 const QUICK_ACTIONS = [
-  "Optimize my resume",
-  "Prepare for interview",
-  "Find remote jobs",
+  "Billing issue",
+  "Feature request",
+  "Technical support",
 ];
 
 export default function AIPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [jobs, setJobs] = useState<any[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { user } = useUser();
+  const userName = user?.name || "User";
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const send = (text?: string) => {
+  // Optimized data selection for AI context to reduce payload size
+  useEffect(() => {
+    const fetchJobs = async () => {
+      const { data } = await supabase
+        .from("jobs")
+        .select("company, job_title, status, created_at")
+        .order("created_at", { ascending: false })
+        .limit(25);
+      if (data) setJobs(data);
+    };
+    fetchJobs();
+  }, []);
+
+  const send = async (text?: string) => {
     const msg = text || input.trim();
     if (!msg) return;
     setInput("");
-    setMessages((p) => [...p, { role: "user", text: msg }]);
+    
+    const newMessages = [...messages, { role: "user" as const, text: msg }];
+    setMessages(newMessages);
     setLoading(true);
-    setTimeout(() => {
+    
+    try {
+      const chatHistory = newMessages.map(m => ({
+        role: m.role === "user" ? "user" as const : "assistant" as const,
+        content: m.text
+      }));
+
+      // Call Real AI via Server Action
+      const responseText = await chatWithAria(chatHistory, user, jobs);
+      
+      // Parse suggested replies
+      let cleanText = responseText || "";
+      let suggested: string[] = [];
+      
+      if (cleanText.includes("Suggested Replies:")) {
+        const parts = cleanText.split("Suggested Replies:");
+        cleanText = parts[0].trim();
+        suggested = parts[1]
+          .split("\n")
+          .filter(line => /^\d\./.test(line.trim()))
+          .map(line => line.replace(/^\d\.\s*/, "").trim());
+      }
+
       setMessages((p) => [
         ...p,
         {
           role: "ai",
-          text: "I'm your personal career assistant. I can help you track your applications, optimize your profile, or prepare for upcoming interviews. How would you like to start today? 🚀",
+          text: cleanText,
+          suggestedReplies: suggested
         },
       ]);
+    } catch (err) {
+      console.error("AI Error:", err);
+      setMessages((p) => [
+        ...p,
+        { role: "ai", text: "I hit a snag while trying to connect. Can you try that again?" }
+      ]);
+    } finally {
       setLoading(false);
-    }, 900);
+    }
   };
 
   return (
     <div
       style={{
-        width: 320,
+        width: 380,
         flexShrink: 0,
         background: "#FFFFFF",
         borderLeft: "1px solid #EBEBEB",
@@ -93,7 +145,7 @@ export default function AIPanel() {
     >
       <div
         style={{
-          padding: "18px 24px 14px",
+          padding: "18px 64px 14px 24px",
           borderBottom: `1px solid ${C.border}`,
           flexShrink: 0,
           display: "flex",
@@ -101,10 +153,18 @@ export default function AIPanel() {
           justifyContent: "space-between",
         }}
       >
-        <span style={{ fontWeight: 700, fontSize: 14, color: C.text }}>Your AI Assistant</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${C.border}` }}>
+            <span style={{ fontSize: 16 }}>👋</span>
+          </div>
+          <div>
+            <span style={{ fontWeight: 700, fontSize: 14, color: C.text, display: "block" }}>Aria</span>
+            <span style={{ fontSize: 11, color: C.teal, fontWeight: 600 }}>Support Specialist • Online</span>
+          </div>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button
-              onClick={() => alert("Premium features coming soon!")}
+              onClick={() => alert("Premium access active")}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -114,13 +174,13 @@ export default function AIPanel() {
                 color: C.white,
                 border: "none",
                 borderRadius: 999,
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: 700,
                 cursor: "pointer",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
               }}
             >
-              <Sparkles size={12} fill={C.teal} color={C.teal} /> Unlock Premium
+              <Sparkles size={11} fill={C.teal} color={C.teal} /> Priority Support
             </button>
         </div>
       </div>
@@ -128,42 +188,85 @@ export default function AIPanel() {
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px", display: "flex", flexDirection: "column" }}>
         {messages.length === 0 ? (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
-            <h2 style={{ fontSize: 32, fontWeight: 800, color: C.text, lineHeight: 1.1, marginBottom: 12, letterSpacing: "-0.02em" }}>
-              How can I help<br />you, <span style={{ color: C.muted }}>Kishore?</span>
+            <div style={{ width: 64, height: 64, borderRadius: 24, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, border: `1px solid ${C.border}` }}>
+              <img src="/NV-logo-short.png" alt="Nexvelt Aria" style={{ width: 32, height: 32, opacity: 0.8 }} />
+            </div>
+            <h2 style={{ fontSize: 28, fontWeight: 800, color: C.text, lineHeight: 1.1, marginBottom: 12, letterSpacing: "-0.02em" }}>
+              Hey {userName.split(' ')[0]},<br />how can I <span style={{ color: C.teal }}>help?</span>
             </h2>
-            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 28, maxWidth: 240 }}>
-              Ask anything about your job applications, profile optimization, or career growth.
+            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 28, maxWidth: 260 }}>
+              I'm Aria, your dedicated support specialist. I'm here to ensure everything runs smoothly for you.
             </p>
             
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 10 }}>
-              <AIChip icon="💼" label="Applications" onClick={() => send("Show my applications")} color={C.iconActiveBg} textColor={C.teal} />
-              <AIChip icon="📝" label="Resume" onClick={() => send("Analyze my resume")} color={`${C.purple}15`} textColor={C.purple} />
-              <AIChip icon="📅" label="Interviews" onClick={() => send("Show upcoming interviews")} color={`${C.amber}15`} textColor={C.amber} />
+              <AIChip icon="💸" label="Billing Issue" onClick={() => send("I have a billing question")} color={C.iconActiveBg} textColor={C.teal} />
+              <AIChip icon="🛠️" label="Tech Support" onClick={() => send("Something isn't working")} color={`${C.purple}15`} textColor={C.purple} />
+              <AIChip icon="🚀" label="Feature Request" onClick={() => send("I have an idea for a feature")} color={`${C.amber}15`} textColor={C.amber} />
             </div>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {messages.map((m, i) => (
-              <div key={`msg-${i}`} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-                <div
-                  style={{
-                    maxWidth: "85%",
-                    padding: "12px 16px",
-                    borderRadius: m.role === "user" ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
-                    background: m.role === "user" ? C.text : C.bg,
-                    color: m.role === "user" ? C.white : C.text,
-                    fontSize: 14,
-                    fontWeight: 500,
-                    lineHeight: 1.5,
-                    boxShadow: m.role === "user" ? "0 4px 12px rgba(0,0,0,0.1)" : "none",
-                  }}
-                >
-                  {m.text}
+              <div key={`msg-${i}`} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+                  <div
+                    style={{
+                      maxWidth: "90%",
+                      padding: "14px 18px",
+                      borderRadius: m.role === "user" ? "24px 24px 4px 24px" : "24px 24px 24px 4px",
+                      background: m.role === "user" ? C.text : C.bg,
+                      color: m.role === "user" ? C.white : C.text,
+                      fontSize: 14,
+                      fontWeight: 500,
+                      lineHeight: 1.6,
+                      boxShadow: m.role === "user" ? "0 4px 16px rgba(15, 23, 42, 0.08)" : "none",
+                      whiteSpace: "pre-wrap"
+                    }}
+                  >
+                    {m.text}
+                  </div>
                 </div>
+                
+                {m.role === "ai" && m.suggestedReplies && m.suggestedReplies.length > 0 && i === messages.length - 1 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4, paddingLeft: 4 }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.1em" }}>Suggested Replies:</span>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {m.suggestedReplies.map((reply, idx) => (
+                        <button
+                          key={`reply-${idx}`}
+                          onClick={() => send(reply)}
+                          style={{
+                            padding: "8px 14px",
+                            background: "white",
+                            border: `1px solid ${C.border}`,
+                            borderRadius: 12,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.text,
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.02)"
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.borderColor = C.teal)}
+                          onMouseLeave={(e) => (e.currentTarget.style.borderColor = C.border)}
+                        >
+                          {reply}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             {loading && (
-              <div style={{ color: C.muted, fontSize: 12, paddingLeft: 4, fontStyle: "italic" }}>AI is thinking...</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 12 }}>
+                <div style={{ display: "flex", gap: 3 }}>
+                  <div className="animate-bounce" style={{ width: 4, height: 4, background: C.teal, borderRadius: "50%" }}></div>
+                  <div className="animate-bounce" style={{ width: 4, height: 4, background: C.teal, borderRadius: "50%", animationDelay: "0.2s" }}></div>
+                  <div className="animate-bounce" style={{ width: 4, height: 4, background: C.teal, borderRadius: "50%", animationDelay: "0.4s" }}></div>
+                </div>
+                <span style={{ color: C.muted, fontSize: 11, fontWeight: 600 }}>Aria is typing...</span>
+              </div>
             )}
             <div ref={bottomRef} />
           </div>

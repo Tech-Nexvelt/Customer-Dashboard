@@ -7,6 +7,7 @@ import { navItems, bottomNavItems } from "@/constants/navItems";
 import { useDashboard } from "@/lib/dashboard/dashboardContext";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/features/auth/hooks/useUser";
 
 const allItems = [...navItems, ...bottomNavItems];
 
@@ -20,7 +21,10 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { unreadJobCount } = useDashboard();
+  const { user } = useUser();
   const active = allItems.find((n) => pathname.startsWith(n.href));
+
+  const userName = user?.name || "User";
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -70,7 +74,7 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
 
       {/* Breadcrumbs */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
-        <span style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}>Kishore</span>
+        <span style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}>{userName}</span>
         <span style={{ color: C.light_text, fontSize: 14 }}>/</span>
         <div
           style={{

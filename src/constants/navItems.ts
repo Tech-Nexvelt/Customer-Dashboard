@@ -3,10 +3,10 @@ import { NavItem } from "@/types/dashboard";
 export const navItems: NavItem[] = [
   { id: "overview", label: "Overview",          href: "/dashboard/overview", icon: "Home"         },
   { id: "jobs",     label: "Job Links",        href: "/dashboard/jobs",     icon: "ClipboardList"},
-  { id: "resume",   label: "Resume & Portfolio", href: "/dashboard/resume",   icon: "Bookmark"     },
-  { id: "chat",     label: "Messages",           href: "/dashboard/chat",     icon: "MessageCircle", badge: 2 },
+  { id: "resume",   label: "Resume", href: "/dashboard/resume",   icon: "Bookmark"     },
   { id: "prep",     label: "Prep",               href: "/dashboard/prep",     icon: "Clock"        },
   { id: "plans",    label: "Plan",               href: "/dashboard/plans",    icon: "BarChart2"    },
+  { id: "admin",    label: "Admin Feed",        href: "/dashboard/admin",    icon: "Users"         },
 ];
 
 export const bottomNavItems: NavItem[] = [

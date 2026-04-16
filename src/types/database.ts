@@ -12,6 +12,7 @@ export interface User {
   preferredStack: string | null
   expectedSalary: number | null
   workType: string | null
+  accessLevel: 'admin' | 'client'
   createdAt: string
   updatedAt: string
   deletedAt: string | null
@@ -49,15 +50,6 @@ export interface Interview {
   updatedAt: string
 }
 
-export interface Message {
-  id: string
-  userId: string
-  senderRole: 'user' | 'advisor' | 'system'
-  text: string
-  messageType: string
-  readAt: string | null
-  createdAt: string
-}
 
 export interface Subscription {
   id: string

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
 import TabBar from "@/components/layout/TabBar";
@@ -59,14 +60,16 @@ function DashboardInnerLayout({ children }: { children: React.ReactNode }) {
   if (isVerifying) return null; // Prevent flicker
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", background: "#F8FAFC" }}>
+    <div style={{ minHeight: "100vh", background: "#F8FAFC" }}>
       <JobRealtimeListener />
-      {/* ── Top: Full-Width Top Bar ── */}
-      <TopBar onMenuClick={() => setDrawerOpen((v: boolean) => !v)} />
+      {/* ── Top: Sticky Top Bar ── */}
+      <div style={{ position: "sticky", top: 0, zIndex: 1000 }}>
+        <TopBar onMenuClick={() => setDrawerOpen((v: boolean) => !v)} />
+      </div>
 
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+      <div style={{ display: "flex", alignItems: "flex-start" }}>
         {/* ── Left: Expanded Sidebar ── */}
-        <div className="ds-sidebar-desktop" style={{ width: 240, borderRight: "1px solid #F1F5F9" }}>
+        <div className="ds-sidebar-desktop" style={{ width: 240, borderRight: "1px solid #F1F5F9", position: "sticky", top: 64, height: "calc(100vh - 64px)", overflowY: "auto" }}>
           <Sidebar expanded={true} />
         </div>
 
@@ -84,23 +87,32 @@ function DashboardInnerLayout({ children }: { children: React.ReactNode }) {
         )}
 
         {/* ── Main Content Area ── */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden", background: "#FFFFFF" }}>
-          <div style={{ background: "#FFFFFF", borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "#FFFFFF" }}>
+          <div style={{ background: "#FFFFFF", borderBottom: `1px solid ${C.border}`, position: "sticky", top: 64, zIndex: 90 }}>
             <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%" }}>
               <TabBar
                 tabs={tabs}
                 activeId={activeId}
-                onSwitch={(tab) => switchTab(tab.id)}
+                onSwitch={(tab) => router.push(tab.href)}
                 onClose={closeTab}
                 onAdd={() => addTab("New Tab", pathname, C.teal)}
               />
             </div>
           </div>
 
-          <div style={{ flex: 1, overflowY: "auto", background: "#F8FAFC" }}>
-            <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px", width: "100%" }}>
-              {children}
-            </div>
+          <div style={{ flex: 1, background: "#F8FAFC" }}>
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px", width: "100%" }}
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
 
@@ -117,7 +129,7 @@ function DashboardInnerLayout({ children }: { children: React.ReactNode }) {
               borderLeft: `1px solid ${C.border}`, 
               display: "flex", 
               flexDirection: "column",
-              zIndex: 100,
+              zIndex: 2000,
               boxShadow: "-10px 0 50px rgba(0,0,0,0.1)",
             }} 
             className="animate-in slide-in-from-right duration-300"
@@ -156,10 +168,14 @@ function DashboardInnerLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
+import SmoothScroll from "@/components/shared/SmoothScroll";
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <DashboardProvider>
-      <DashboardInnerLayout>{children}</DashboardInnerLayout>
+      <SmoothScroll>
+        <DashboardInnerLayout>{children}</DashboardInnerLayout>
+      </SmoothScroll>
     </DashboardProvider>
   );
 }

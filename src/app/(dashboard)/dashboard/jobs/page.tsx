@@ -9,8 +9,11 @@ import { supabase } from "@/lib/supabaseClient";
 import { useDashboard } from "@/lib/dashboard/dashboardContext";
 import { PLAN_LIMITS, PlanType } from "@/constants/planLimits";
 import UsageStats from "@/components/dashboard/overview/UsageStats";
+import { useUser } from "@/features/auth/hooks/useUser";
+import { triggerNotificationIfEnabled } from "@/lib/mail/mailer";
 
 export default function JobsPage() {
+  const { user } = useUser();
   const currentPlan: PlanType = 'basic';
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +36,7 @@ export default function JobsPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from("jobs")
-      .select("*")
+      .select("id, company, job_title, status, location, domain, source, created_at, apply_link")
       .order("created_at", { ascending: false });
     
     if (!error && data) {
@@ -51,7 +54,16 @@ export default function JobsPage() {
       .update({ status: newStatus })
       .eq("id", id);
     
-    if (error) {
+    if (!error) {
+      if (newStatus === "completed" && user) {
+        const job = jobs.find(j => j.id === id);
+        await triggerNotificationIfEnabled(
+          user, 
+          `Application Completed: ${job?.company}`,
+          `Good news! Your application for <b>${job?.job_title}</b> at <b>${job?.company}</b> has been marked as completed.`
+        );
+      }
+    } else {
       fetchJobs(); // Refresh if error
     }
   };
