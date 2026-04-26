@@ -6,7 +6,6 @@ export const navItems: NavItem[] = [
   { id: "resume",   label: "Resume", href: "/dashboard/resume",   icon: "Bookmark"     },
   { id: "prep",     label: "Prep",               href: "/dashboard/prep",     icon: "Clock"        },
   { id: "plans",    label: "Plan",               href: "/dashboard/plans",    icon: "BarChart2"    },
-  { id: "admin",    label: "Admin Feed",        href: "/dashboard/admin",    icon: "Users"         },
 ];
 
 export const bottomNavItems: NavItem[] = [

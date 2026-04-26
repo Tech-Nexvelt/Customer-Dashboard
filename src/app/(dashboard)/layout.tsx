@@ -1,16 +1,17 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
 import TabBar from "@/components/layout/TabBar";
 import AIPanel from "@/components/layout/AIPanel";
-import JobRealtimeListener from "@/components/dashboard/JobRealtimeListener";
 import { DashboardProvider, useDashboard } from "@/lib/dashboard/dashboardContext";
+import OnboardingModal from "@/components/dashboard/OnboardingModal";
+import { useUser } from "@/features/auth/hooks/useUser";
 import { navItems } from "@/constants/navItems";
-import { supabase } from "@/lib/supabaseClient";
 import C from "@/constants/colors";
 
 function DashboardInnerLayout({ children }: { children: React.ReactNode }) {
@@ -19,29 +20,12 @@ function DashboardInnerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { tabs, activeId, switchTab, closeTab, addTab, setActiveId } = useDashboard();
-  const [isVerifying, setIsVerifying] = useState(true);
+  const { data: session, status } = useSession();
+  const { user, loading: userLoading } = useUser();
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  // Security Check: Redirect if not logged in
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace("/login");
-      } else {
-        setIsVerifying(false);
-      }
-    };
-    checkUser();
-    
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.replace("/login");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [router]);
+  // Derived Onboarding State - Avoids cascading renders
+  const showOnboarding = status === "authenticated" && !userLoading && user?.onboardingStatus === "pending";
 
   // Sync Tabs with Route changes
   useEffect(() => {
@@ -57,11 +41,8 @@ function DashboardInnerLayout({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, tabs, setActiveId, addTab, isVerifying]);
 
-  if (isVerifying) return null; // Prevent flicker
-
   return (
     <div style={{ minHeight: "100vh", background: "#F8FAFC" }}>
-      <JobRealtimeListener />
       {/* ── Top: Sticky Top Bar ── */}
       <div style={{ position: "sticky", top: 0, zIndex: 1000 }}>
         <TopBar onMenuClick={() => setDrawerOpen((v: boolean) => !v)} />
@@ -88,17 +69,6 @@ function DashboardInnerLayout({ children }: { children: React.ReactNode }) {
 
         {/* ── Main Content Area ── */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "#FFFFFF" }}>
-          <div style={{ background: "#FFFFFF", borderBottom: `1px solid ${C.border}`, position: "sticky", top: 64, zIndex: 90 }}>
-            <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%" }}>
-              <TabBar
-                tabs={tabs}
-                activeId={activeId}
-                onSwitch={(tab) => router.push(tab.href)}
-                onClose={closeTab}
-                onAdd={() => addTab("New Tab", pathname, C.teal)}
-              />
-            </div>
-          </div>
 
           <div style={{ flex: 1, background: "#F8FAFC" }}>
             <AnimatePresence mode="popLayout" initial={false}>
@@ -159,6 +129,8 @@ function DashboardInnerLayout({ children }: { children: React.ReactNode }) {
         </button>
       )}
 
+      <OnboardingModal isOpen={showOnboarding} onClose={() => {}} />
+
       <style>{`
         @media (max-width: 1024px) {
           .ds-sidebar-desktop { display: none !important; }
@@ -168,14 +140,10 @@ function DashboardInnerLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-import SmoothScroll from "@/components/shared/SmoothScroll";
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <DashboardProvider>
-      <SmoothScroll>
-        <DashboardInnerLayout>{children}</DashboardInnerLayout>
-      </SmoothScroll>
+      <DashboardInnerLayout>{children}</DashboardInnerLayout>
     </DashboardProvider>
   );
 }

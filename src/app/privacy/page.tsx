@@ -97,7 +97,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-black text-[#0F172A] uppercase tracking-wider mb-4">9. Contact</h2>
             <p className="flex items-center gap-3 font-bold text-[#0F172A]">
                <Mail size={18} className="text-[#2DD4A7]" />
-               nexvelt2013@gmail.com
+               nexvelt.hyd@gmail.com
             </p>
           </section>
         </div>

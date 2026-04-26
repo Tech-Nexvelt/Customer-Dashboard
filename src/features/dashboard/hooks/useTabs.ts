@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DEFAULT_TABS } from "@/constants/tabs";
+import { useSession } from "next-auth/react";
 import { Tab } from "@/types/dashboard";
 import { navItems, bottomNavItems } from "@/constants/navItems";
 
@@ -11,6 +12,27 @@ export function useTabs() {
   const [activeId, setActiveId] = useState(1);
   const [unreadJobCount, setUnreadJobCount] = useState(0);
   const [totalJobCount, setTotalJobCount] = useState(0);
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    async function fetchCount() {
+      if (!session?.user) return;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/jobs?limit=1`, {
+          headers: {
+            Authorization: `Bearer ${(session.user as any).accessToken}`,
+          },
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setTotalJobCount(data.total);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchCount();
+  }, [session]);
 
   const switchTab = (id: number) => {
     setActiveId(id);

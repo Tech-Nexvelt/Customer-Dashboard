@@ -1,10 +1,8 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { Mic, Link2, Sparkles } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient"
-import C from "@/constants/colors";
 import { useUser } from "@/features/auth/hooks/useUser";
-import { chatWithAria } from "@/lib/ai/chat";
+import C from "@/constants/colors";
 
 interface AIChipProps {
   icon: string;
@@ -57,7 +55,6 @@ export default function AIPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [jobs, setJobs] = useState<any[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
   const userName = user?.name || "User";
@@ -65,19 +62,6 @@ export default function AIPanel() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // Optimized data selection for AI context to reduce payload size
-  useEffect(() => {
-    const fetchJobs = async () => {
-      const { data } = await supabase
-        .from("jobs")
-        .select("company, job_title, status, created_at")
-        .order("created_at", { ascending: false })
-        .limit(25);
-      if (data) setJobs(data);
-    };
-    fetchJobs();
-  }, []);
 
   const send = async (text?: string) => {
     const msg = text || input.trim();
@@ -88,17 +72,11 @@ export default function AIPanel() {
     setMessages(newMessages);
     setLoading(true);
     
-    try {
-      const chatHistory = newMessages.map(m => ({
-        role: m.role === "user" ? "user" as const : "assistant" as const,
-        content: m.text
-      }));
-
-      // Call Real AI via Server Action
-      const responseText = await chatWithAria(chatHistory, user, jobs);
+    // Mock response for pure frontend
+    setTimeout(() => {
+      const responseText = "Thanks for your message! As this is a frontend demo, I'm currently in offline mode. How else can I help you explore the interface?\n\nSuggested Replies:\n1. Show me the dashboard\n2. View job leads\n3. Settings";
       
-      // Parse suggested replies
-      let cleanText = responseText || "";
+      let cleanText = responseText;
       let suggested: string[] = [];
       
       if (cleanText.includes("Suggested Replies:")) {
@@ -118,16 +96,10 @@ export default function AIPanel() {
           suggestedReplies: suggested
         },
       ]);
-    } catch (err) {
-      console.error("AI Error:", err);
-      setMessages((p) => [
-        ...p,
-        { role: "ai", text: "I hit a snag while trying to connect. Can you try that again?" }
-      ]);
-    } finally {
       setLoading(false);
-    }
+    }, 1000);
   };
+
 
   return (
     <div

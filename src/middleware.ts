@@ -1,19 +1,46 @@
-import { type NextRequest } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
+import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  return await updateSession(request)
-}
+export default withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token;
+    const isAuth = !!token;
+    const isAuthPage = req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/signup");
+
+    if (isAuthPage) {
+      if (isAuth) {
+        return NextResponse.redirect(new URL("/dashboard/overview", req.url));
+      }
+      return null;
+    }
+
+    // New: redirect authenticated users from home page to dashboard
+    if (req.nextUrl.pathname === "/" && isAuth) {
+      return NextResponse.redirect(new URL("/dashboard/overview", req.url));
+    }
+
+    // If the user is unauthenticated and trying to access the home page, let them stay.
+    if (!isAuth && req.nextUrl.pathname === "/") {
+      return null;
+    }
+  },
+  {
+    callbacks: {
+      async authorized() {
+        // This is a work-around for handled redirection above
+        return true;
+      },
+    },
+  }
+);
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/",
+    "/dashboard/:path*",
+    "/onboarding/:path*",
+    "/settings/:path*",
+    "/login",
+    "/signup"
   ],
-}
+};

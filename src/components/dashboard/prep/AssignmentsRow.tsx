@@ -3,18 +3,17 @@ import React from "react";
 import { ChevronRight, Bookmark, Circle, Sparkles, PenLine } from "lucide-react";
 import C from "@/constants/colors";
 import { AssignmentCardData } from "@/types/dashboard";
-
-const ASSIGN_CARDS: AssignmentCardData[] = [
-  { count: 0,  label: "Applications", Icon: Bookmark,  iconColor: "#3B82F6", bg: "#EFF6FF", href: "/dashboard/jobs"     },
-  { count: 0,  label: "New Alerts",  Icon: Circle,    iconColor: "#F97316", bg: "#FFF7ED", href: "/dashboard/overview" },
-  { count: 0, label: "Company News", Icon: Sparkles,  iconColor: "#EAB308", bg: "#FEFCE8", href: "/dashboard/overview" },
-  { count: 0,  label: "Interview Prep", Icon: PenLine,   iconColor: "#10B981", bg: "#F0FDF4", href: "/dashboard/prep"     },
-];
-
 import { useDashboard } from "@/lib/dashboard/dashboardContext";
 
 export default function AssignmentsRow() {
-  const { addTab, switchTab, tabs } = useDashboard();
+  const { totalJobCount, tabs, switchTab, addTab } = useDashboard();
+
+  const ASSIGN_CARDS: AssignmentCardData[] = [
+    { count: totalJobCount,  label: "Applications", Icon: Bookmark,  iconColor: "#3B82F6", bg: "#EFF6FF", href: "/dashboard/jobs"     },
+    { count: 0,  label: "New Alerts",  Icon: Circle,    iconColor: "#F97316", bg: "#FFF7ED", href: "/dashboard/overview" },
+    { count: 0, label: "Company News", Icon: Sparkles,  iconColor: "#EAB308", bg: "#FEFCE8", href: "/dashboard/overview" },
+    { count: 0,  label: "Interview Prep", Icon: PenLine,   iconColor: "#10B981", bg: "#F0FDF4", href: "/dashboard/prep"     },
+  ];
 
   const handleNav = (label: string) => {
     const existing = tabs.find(t => t.name === label);

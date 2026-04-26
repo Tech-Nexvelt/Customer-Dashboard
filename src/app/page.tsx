@@ -3,35 +3,34 @@
 import React from "react";
 import Link from "next/link";
 import { ChevronRight, ShieldCheck, Zap, Globe, Target, BarChart3, Users, Mail, ArrowRight, UserCheck } from "lucide-react";
-
-import { supabase } from "@/lib/supabaseClient";
+import Footer from "@/components/ui/Footer";
+import FibonacciPlane from "@/components/ui/FibonacciPlane";
 
 export default function LandingPage() {
   const [leadEmail, setLeadEmail] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
+  const [billingCycle, setBillingCycle] = React.useState<"monthly" | "quarterly">("monthly");
+  const [activePlan, setActivePlan] = React.useState("PRO");
 
   const handleLeadCapture = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadEmail) return;
     setIsSubmitting(true);
     
-    try {
-      const { error } = await supabase.from('leads').insert([{ email: leadEmail }]);
-      if (error) throw error;
+    // Mock lead capture for pure frontend demo
+    setTimeout(() => {
       setIsSuccess(true);
       setLeadEmail("");
-      setTimeout(() => setIsSuccess(false), 3000);
-    } catch (err) {
-      console.error("Error capturing lead:", err);
-      alert("Failed to join. Please try again.");
-    } finally {
       setIsSubmitting(false);
-    }
+      setTimeout(() => setIsSuccess(false), 3000);
+    }, 1000);
   };
+
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] selection:bg-[#2DD4A7]/20 selection:text-[#0F172A] overflow-x-hidden">
+      <FibonacciPlane />
       
       {/* ─── NAVIGATION ─── */}
       <nav className="glass-nav">
@@ -57,7 +56,7 @@ export default function LandingPage() {
               Log In
             </Link>
             <Link 
-              href="/onboarding" 
+              href="/signup" 
               className="pill-button bg-[#0F172A] text-white hover:bg-[#2DD4A7] hover:text-[#0F172A] text-[11px] uppercase tracking-[0.2em] flex items-center gap-2"
             >
               Get Started <ChevronRight size={14} strokeWidth={3} />
@@ -87,7 +86,7 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row items-center gap-5 justify-center lg:justify-start">
                 <Link 
-                  href="/onboarding" 
+                  href="/signup" 
                   className="pill-button bg-[#2DD4A7] text-[#0F172A] px-12 py-5 shadow-teal hover:scale-105 active:scale-95 text-xs uppercase tracking-[0.15em]"
                 >
                   Join The Search
@@ -227,7 +226,7 @@ export default function LandingPage() {
                   </div>
                   <h3 className="text-xl font-black text-[#0F172A] mb-1">{t.name}</h3>
                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#2DD4A7] mb-6">{t.role}</p>
-                  <p className="text-slate-500 text-[13px] font-medium leading-relaxed">"{t.quote}"</p>
+                  <p className="text-slate-500 text-[13px] font-medium leading-relaxed">&quot;{t.quote}&quot;</p>
                 </div>
               ))}
             </div>
@@ -241,9 +240,24 @@ export default function LandingPage() {
         {/* ─── PRICING SECTION ─── */}
         <section id="pricing" className="py-24 bg-white">
           <div className="max-w-5xl mx-auto px-6">
-            <div className="text-center mb-20">
+            <div className="text-center mb-16">
                <h2 className="text-4xl md:text-5xl font-black text-[#0F172A] mb-4 tracking-tight">Simple Pricing.</h2>
-               <p className="text-slate-500 font-medium">Choose a plan that fits your search intensity.</p>
+               <p className="text-slate-500 font-medium mb-8">Choose a plan that fits your search intensity.</p>
+               
+               <div className="inline-flex items-center p-1 bg-slate-100 rounded-full border border-slate-200">
+                 <button 
+                   onClick={() => setBillingCycle("monthly")}
+                   className={`px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all ${billingCycle === "monthly" ? "bg-white shadow-sm text-[#0F172A]" : "text-slate-400 hover:text-slate-600"}`}
+                 >
+                   Monthly
+                 </button>
+                 <button 
+                   onClick={() => setBillingCycle("quarterly")}
+                   className={`px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${billingCycle === "quarterly" ? "bg-[#2DD4A7] shadow-sm text-[#0F172A]" : "text-slate-400 hover:text-slate-600"}`}
+                 >
+                   3 Months <span className="text-[9px] bg-white text-[#2DD4A7] px-2 py-0.5 rounded-full">SAVE 20%</span>
+                 </button>
+               </div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 items-start">
@@ -257,7 +271,7 @@ export default function LandingPage() {
                  },
                  { 
                    plan: "PRO", 
-                   price: "149", 
+                   price: billingCycle === "monthly" ? "149" : "119", 
                    active: true, 
                    label: "Most Popular",
                    features: [
@@ -271,7 +285,7 @@ export default function LandingPage() {
                  },
                  { 
                    plan: "PREMIUM", 
-                   price: "249", 
+                   price: billingCycle === "monthly" ? "249" : "199", 
                    active: false, 
                    label: "Best Value",
                    features: [
@@ -287,9 +301,11 @@ export default function LandingPage() {
                      "Placement guarantee"
                    ]
                  }
-               ].map((p, i) => (
-                 <div key={i} className={`p-8 md:p-10 rounded-[45px] border-2 relative transition-all duration-500 overflow-hidden ${p.active ? 'border-[#2DD4A7] shadow-premium scale-105 z-10 bg-white' : 'border-slate-50 bg-[#F8FAFC]/50'}`}>
-                    {p.active ? (
+               ].map((p, i) => {
+                 const isActive = activePlan === p.plan;
+                 return (
+                 <div key={i} onClick={() => setActivePlan(p.plan)} className={`p-8 md:p-10 rounded-[45px] border-2 relative transition-all duration-500 overflow-hidden cursor-pointer ${isActive ? 'border-[#2DD4A7] shadow-premium scale-105 z-10 bg-white' : 'border-slate-50 bg-[#F8FAFC]/50 hover:border-slate-200'}`}>
+                    {isActive ? (
                        <span className="absolute -top-1 right-1/2 translate-x-1/2 bg-[#2DD4A7] text-[#0F172A] text-[9px] font-black uppercase tracking-[0.2em] px-8 py-2.5 rounded-b-3xl">Most Popular</span>
                     ) : (
                        <span className="absolute -top-1 right-1/2 translate-x-1/2 bg-slate-100 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em] px-6 py-2 rounded-b-2xl">{p.label}</span>
@@ -313,12 +329,13 @@ export default function LandingPage() {
                          ))}
                       </ul>
 
-                      <Link href="/onboarding" className={`pill-button w-full text-center block text-[11px] uppercase tracking-[0.2em] ${p.active ? 'bg-[#2DD4A7] text-[#0F172A] shadow-teal' : 'bg-[#0F172A] text-white hover:bg-black'}`}>
+                      <Link href="/signup" className={`pill-button w-full text-center block text-[11px] uppercase tracking-[0.2em] ${isActive ? 'bg-[#2DD4A7] text-[#0F172A] shadow-teal' : 'bg-[#0F172A] text-white hover:bg-black'}`}>
                         Get Started
                       </Link>
                     </div>
                  </div>
-               ))}
+                 );
+               })}
             </div>
           </div>
         </section>
@@ -353,31 +370,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* ─── FOOTER ─── */}
-      <footer className="py-16 bg-[#F8FAFC]/50 border-t border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-10">
-          <Link href="/" className="flex items-center gap-2 grayscale brightness-0 opacity-50 cursor-pointer">
-            <img 
-               src="/NVlogo.png" 
-               alt="Nexvelt Logo" 
-               className="h-12 w-auto"
-            />
-          </Link>
-          <div className="flex gap-10">
-            {[
-              { name: "Terms", href: "/terms" },
-              { name: "Privacy", href: "/privacy" },
-              { name: "Support", href: "mailto:nexvelt2013@gmail.com" }
-            ].map(item => (
-              <Link key={item.name} href={item.href} className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-[#0F172A] transition-colors">{item.name}</Link>
-            ))}
-          </div>
-          <div className="flex flex-col items-center md:items-end gap-2 text-center md:text-right">
-            <p className="text-[9px] font-medium text-slate-400">By using Nexvelt, you agree to our <Link href="/terms" className="underline hover:text-[#2DD4A7]">Terms of Service</Link> and <Link href="/privacy" className="underline hover:text-[#2DD4A7]">Privacy Policy</Link>.</p>
-            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">© 2026 NEXVELT TECHNOLOGIES. ALL RIGHTS RESERVED.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

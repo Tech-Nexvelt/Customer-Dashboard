@@ -1,266 +1,202 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { ShieldCheck, Mail, Lock, User, Eye, EyeOff, Briefcase, MapPin, BarChart, Clock, ChevronRight, Globe } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { toast } from "react-hot-toast";
+import { Github, Lock, Mail, Eye, EyeOff, User, AlertCircle } from "lucide-react";
 import { AuthInput, AuthButton } from "@/components/ui/AuthComponents";
 
-export default function SignupPage() {
+function SignupForm() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [domain, setDomain] = useState("");
-  const [role, setRole] = useState("");
-  const [country, setCountry] = useState("");
-  const [experienceLevel, setExperienceLevel] = useState("");
-  const [workType, setWorkType] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
+  const [loadingGithub, setLoadingGithub] = useState(false);
+
   const router = useRouter();
 
-  const domainOptions = [
-    "software_engineering", "ai_ml_data", "data_analytics", "data_engineering", 
-    "cloud_devops", "cyber_security", "finance_compliance", "healthcare_lifescience", 
-    "core_engineering", "industrial_automation", "enterprise_tools", "agriculture"
-  ];
-
-  const roles = [
-    "AI/ML Engineer", "Data Scientist", "Data Engineer", "Data Analyst", "Big Data Engineer",
-    "Full Stack Developer", "Frontend Engineer", "Backend Engineer", "Cloud Engineer", "DevOps Engineer",
-    "Cyber Security Engineer", "Business Analyst", "Financial Analyst", "Electrical Engineer", "Chemical Engineer",
-    "Bioinformatics", "Embedded Software Engineer", "ERP Specialist", "CRM Specialist"
-  ];
-
-  const experienceLevels = ["Internship", "Entry Level", "Mid Level", "Senior"];
-  const workTypes = ["Full-time", "Remote", "Hybrid"];
-
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleManualSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    if (!domain || !role || !experienceLevel || !workType || !country) {
-      setError("Please fill in all professional details.");
-      setLoading(false);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password.trim(),
-        options: { 
-          data: { 
-            full_name: fullName, 
-            domain,
-            role,
-            country,
-            experience_level: experienceLevel,
-            work_type: workType
-          } 
-        },
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: fullName, email, password }),
       });
 
-      if (signUpError) throw signUpError;
+      const data = await res.json();
 
-      if (data.user) {
-        const { error: insertError } = await supabase.from('clients').upsert([{ 
-          id: data.user.id, 
-          name: fullName, 
-          email: email.trim(), 
-          domain,
-          role,
-          country,
-          experience: experienceLevel,
-          work_type: workType,
-          access_level: 'client'
-        }], { onConflict: 'email' });
-        
-        if (insertError) {
-          console.error("Database Upsert Error:", insertError);
-          throw new Error(`Profile creation failed: ${insertError.message}`);
-        }
-        
-        router.push("/login?message=Check your email to verify!");
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to create account');
       }
-    } catch (err: any) {
-      console.error("Signup Error:", err);
-      setError(err.message || "An error occurred during signup.");
-    } finally {
+
+      toast.success("Account created! Logging you in...");
+
+      // Automatically sign in after registration
+      const signinRes = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
+
+      if (signinRes?.error) {
+        setError("Account created, but failed to log in automatically.");
+        toast.error("Account created, but auto-login failed.");
+        setLoading(false);
+      } else {
+        toast.success("Account created successfully! Preparing your workspace...");
+        
+        // Delay for 2 seconds to show success toast
+        setTimeout(() => {
+          router.push("/dashboard/overview");
+        }, 2000);
+      }
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Registration failed.";
+      setError(errorMessage);
+      toast.error(errorMessage);
       setLoading(false);
     }
   };
 
-  const CustomSelect = ({ label, icon, value, onChange, options, placeholder }: any) => {
-    const [isOpen, setIsOpen] = React.useState(false);
-    
-    const formatLabel = (str: string) => {
-      if (!str) return "";
-      return str
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-    };
-    
-    return (
-      <div className="flex flex-col gap-2 relative">
-        <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 ml-1">{label}</label>
-        <div className="relative">
-          <div 
-            onClick={() => setIsOpen(!isOpen)}
-            className={`w-full pl-11 pr-5 py-4 bg-slate-50 border ${isOpen ? 'border-[#2DD4A7] ring-4 ring-[#2DD4A7]/5 bg-white' : 'border-slate-200'} rounded-2xl text-sm font-medium outline-none transition-all cursor-pointer flex items-center justify-between text-[#0F172A]`}
-          >
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-              {icon}
-            </div>
-            <span className={!value ? "text-slate-400" : ""}>{value ? formatLabel(value) : placeholder}</span>
-            <ChevronRight size={14} className={`transition-transform text-slate-300 ${isOpen ? '-rotate-90' : 'rotate-90'}`} />
-          </div>
-          
-          {isOpen && (
-            <>
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 shadow-2xl rounded-2xl overflow-hidden z-[100] animate-in fade-in zoom-in duration-200">
-                <div className="max-h-60 overflow-y-auto p-2 space-y-1">
-                  {options.map((opt: string) => (
-                    <div 
-                      key={opt}
-                      onClick={() => {
-                        onChange(opt);
-                        setIsOpen(false);
-                      }}
-                      className={`px-4 py-3 rounded-xl text-sm font-medium cursor-pointer transition-colors ${value === opt ? 'bg-[#2DD4A7]/10 text-[#2DD4A7]' : 'text-slate-600 hover:bg-slate-50 hover:text-[#0F172A]'}`}
-                    >
-                      {formatLabel(opt)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="fixed inset-0 z-[90]" onClick={() => setIsOpen(false)}></div>
-            </>
-          )}
-        </div>
-      </div>
-    );
+  const handleGoogleSignup = async () => {
+    setLoadingGoogle(true);
+    await signIn("google", { callbackUrl: "/onboarding/profile" });
+  };
+
+  const handleGithubSignup = async () => {
+    setLoadingGithub(true);
+    await signIn("github", { callbackUrl: "/onboarding/profile" });
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6 pt-20 selection:bg-[#2DD4A7]/10">
+    <div className="h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6 overflow-hidden selection:bg-[#2DD4A7]/10">
       <div className="w-full max-w-[440px]">
-        <div className="flex flex-col items-center mb-8">
+        <div className="flex flex-col items-center mb-4 shrink-0">
           <Link href="/">
-            <img src="/NV-logo-short.png" alt="Nexvelt Logo" className="w-14 h-14 mb-4 drop-shadow-sm cursor-pointer hover:opacity-80 transition-opacity" />
+            <img src="/NV-logo-short.png" alt="Nexvelt Logo" className="w-10 h-10 mb-2 drop-shadow-sm cursor-pointer hover:opacity-80 transition-opacity" />
           </Link>
-          <h1 className="text-3xl font-black text-[#0F172A] tracking-tighter uppercase italic">Nexvelt</h1>
-          <p className="text-slate-400 text-[13px] font-medium mt-1">Join the network</p>
+          <h1 className="text-2xl font-black text-[#0F172A] tracking-tighter uppercase italic">Nexvelt</h1>
+          <p className="text-slate-400 text-[11px] font-medium mt-0.5">Join the network</p>
         </div>
 
-        <div className="bg-white rounded-[45px] shadow-2xl shadow-slate-200/50 p-10 md:p-12 border border-slate-100 relative overflow-hidden">
+        <div className="bg-white rounded-[35px] shadow-2xl shadow-slate-200/50 p-6 md:p-8 border border-slate-100 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#2DD4A7]/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
           
-          <form onSubmit={handleSignup} className="flex flex-col gap-6 relative z-10">
+          <div className="flex flex-col gap-6 relative z-10">
             {error && (
-              <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold rounded-2xl text-center">
-                {error}
+              <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold rounded-2xl flex items-center gap-3">
+                <AlertCircle size={14} className="shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
-            <AuthInput label="Full Name" type="text" placeholder="FULL_NAME" value={fullName} onChange={(e: any) => setFullName(e.target.value)} icon={<User size={18} />} required />
-            <AuthInput label="Email Address" type="email" placeholder="EMAIL_ADDRESS" value={email} onChange={(e: any) => setEmail(e.target.value)} icon={<Mail size={18} />} required />
-            
-            <CustomSelect 
-              label="Professional Domain" 
-              icon={<Globe size={18} />} 
-              value={domain} 
-              onChange={setDomain} 
-              options={domainOptions} 
-              placeholder="Select your industry" 
-            />
-
-            <CustomSelect 
-              label="Target Role" 
-              icon={<Briefcase size={18} />} 
-              value={role} 
-              onChange={setRole} 
-              options={roles} 
-              placeholder="Select your role" 
-            />
-
-            <AuthInput label="Country" type="text" placeholder="COUNTRY" value={country} onChange={(e: any) => setCountry(e.target.value)} icon={<MapPin size={18} />} required />
-
-            <div className="grid grid-cols-2 gap-4">
-              <CustomSelect 
-                label="Experience" 
-                icon={<BarChart size={18} />} 
-                value={experienceLevel} 
-                onChange={setExperienceLevel} 
-                options={experienceLevels} 
-                placeholder="Level" 
+            <form onSubmit={handleManualSignup} className="flex flex-col gap-3.5">
+              <AuthInput 
+                label="Full Name"
+                type="text"
+                placeholder="FULL_NAME"
+                value={fullName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
+                icon={<User size={18} />}
+                required
               />
-              <CustomSelect 
-                label="Work Type" 
-                icon={<Clock size={18} />} 
-                value={workType} 
-                onChange={setWorkType} 
-                options={workTypes} 
-                placeholder="Type" 
+
+              <AuthInput 
+                label="Email Address"
+                type="email"
+                placeholder="EMAIL_ADDRESS"
+                value={email}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                icon={<Mail size={18} />}
+                required
               />
-            </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 ml-1">Password</label>
-              <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#2DD4A7] transition-colors"><Lock size={18} /></div>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-11 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium outline-none transition-all focus:bg-white focus:border-[#2DD4A7] focus:ring-4 focus:ring-[#2DD4A7]/5"
-                  required
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2DD4A7]">
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 ml-1">Password</label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#2DD4A7] transition-colors"><Lock size={18} /></div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-11 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium outline-none transition-all focus:bg-white focus:border-[#2DD4A7] focus:ring-4 focus:ring-[#2DD4A7]/5"
+                    required
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2DD4A7]">
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
+
+              <AuthButton type="submit" loading={loading} variant="teal">Create Account</AuthButton>
+            </form>
+
+            <div className="flex items-center gap-4 my-1">
+              <div className="flex-1 h-px bg-slate-100"></div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">OR</span>
+              <div className="flex-1 h-px bg-slate-100"></div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 ml-1">Confirm Password</label>
-              <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#2DD4A7] transition-colors"><Lock size={18} /></div>
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-11 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium outline-none transition-all focus:bg-white focus:border-[#2DD4A7] focus:ring-4 focus:ring-[#2DD4A7]/5"
-                  required
-                />
-                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2DD4A7]">
-                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
+            <div className="flex flex-col gap-3">
+              <button 
+                type="button"
+                onClick={handleGoogleSignup} 
+                disabled={loadingGoogle || loadingGithub || loading}
+                className="w-full py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              >
+                {loadingGoogle ? "Connecting..." : (
+                  <>
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                    </svg>
+                    Sign up with Google
+                  </>
+                )}
+              </button>
+
+              <button 
+                type="button"
+                onClick={handleGithubSignup} 
+                disabled={loadingGoogle || loadingGithub || loading}
+                className="w-full py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-3 bg-[#24292F] text-white hover:bg-[#24292F]/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              >
+                {loadingGithub ? "Connecting..." : (
+                  <>
+                    <Github className="w-5 h-5" />
+                    Sign up with GitHub
+                  </>
+                )}
+              </button>
             </div>
+          </div>
 
-            <AuthButton type="submit" loading={loading} variant="teal">Create Account</AuthButton>
-          </form>
-
-          <div className="mt-10 pt-8 border-t border-slate-50 text-center relative z-10">
+          <div className="mt-6 pt-5 border-t border-slate-50 text-center relative z-10">
             <p className="text-slate-400 text-[13px] font-medium">Already have an account? <Link href="/login" className="text-[#2DD4A7] hover:text-[#25c99e] font-bold hover:underline transition-colors">Log in</Link></p>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="h-screen flex items-center justify-center bg-[#F8FAFC]">Loading...</div>}>
+      <SignupForm />
+    </Suspense>
   );
 }

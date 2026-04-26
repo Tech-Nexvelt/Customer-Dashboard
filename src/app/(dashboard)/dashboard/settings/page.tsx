@@ -4,23 +4,31 @@ import { User, Bell, Lock, Shield, Globe, CreditCard } from "lucide-react";
 import Card from "@/components/ui/Card";
 import Toggle from "@/components/ui/Toggle";
 import C from "@/constants/colors";
-import { supabase } from "@/lib/supabaseClient";
-import { sendEmailAlert } from "@/lib/mail/mailer";
+import { useUser } from "@/features/auth/hooks/useUser";
+import { toast } from "react-hot-toast";
 
 export default function SettingsPage() {
+  const { user, updateProfile, updateNotifications } = useUser();
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [bio, setBio] = useState("");
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserName(user.user_metadata?.full_name || "");
-        setUserEmail(user.email || "");
+    if (user) {
+      setUserName(user.name || "");
+      setUserEmail(user.email || "");
+      setBio(user.bio || "");
+      
+      if (user.notificationPrefs) {
+        setPrefs({
+          "Email alerts": user.notificationPrefs.emailAlerts,
+          "Push notifications": user.notificationPrefs.pushNotifications,
+          "Weekly progress report": user.notificationPrefs.weeklyReports,
+          "Job interview reminders": user.notificationPrefs.interviewReminders
+        });
       }
-    };
-    getUser();
-  }, []);
+    }
+  }, [user]);
 
   const [prefs, setPrefs] = useState<any>({
     "Email alerts": true,
@@ -30,60 +38,36 @@ export default function SettingsPage() {
   });
   const [saving, setSaving] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchPrefs = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('clients')
-          .select('notification_settings')
-          .eq('id', user.id)
-          .single();
-        
-        if (profile?.notification_settings) {
-          const dbPrefs = profile.notification_settings;
-          setPrefs({
-            "Email alerts": dbPrefs.email_alerts ?? true,
-            "Push notifications": dbPrefs.push_notifications ?? false,
-            "Weekly progress report": dbPrefs.weekly_report ?? true,
-            "Job interview reminders": dbPrefs.interview_reminders ?? false,
-          });
-        }
-      }
-    };
-    fetchPrefs();
-  }, []);
-
   const togglePref = async (name: string, value: boolean) => {
     setSaving(name);
+    
     const newPrefs = { ...prefs, [name]: value };
     setPrefs(newPrefs);
 
-    const dbSettings = {
-      email_alerts: newPrefs["Email alerts"],
-      push_notifications: newPrefs["Push notifications"],
-      weekly_report: newPrefs["Weekly progress report"],
-      interview_reminders: newPrefs["Job interview reminders"],
+    const backendMapping: any = {
+      "Email alerts": "emailAlerts",
+      "Push notifications": "pushNotifications",
+      "Weekly progress report": "weeklyReports",
+      "Job interview reminders": "interviewReminders"
     };
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase
-        .from('clients')
-        .update({ notification_settings: dbSettings })
-        .eq('id', user.id);
-
-      // Trigger a confirmation email if they just enabled it
-      if (name === "Email alerts" && value === true) {
-        await sendEmailAlert(
-          user.email!, 
-          "Email Alerts Enabled!", 
-          `<h1>Success!</h1><p>Hey ${userName || 'there'}, we've successfully enabled your email alerts. You'll now receive updates directly in your inbox.</p>`
-        );
-      }
-    }
+    await updateNotifications({
+      [backendMapping[name]]: value
+    });
     
-    setTimeout(() => setSaving(null), 800);
+    toast.success(`${name} updated`);
+    setSaving(null);
+  };
+
+  const handleSaveProfile = async () => {
+    setSaving("profile");
+    const success = await updateProfile({ name: userName, bio });
+    setSaving(null);
+    if (success) {
+      toast.success("Profile updated successfully!");
+    } else {
+      toast.error("Failed to update profile.");
+    }
   };
 
   return (
@@ -155,6 +139,8 @@ export default function SettingsPage() {
             </div>
             <div style={{ marginTop: 20, display: "flex", justifyContent: "flex-end" }}>
               <button
+                onClick={handleSaveProfile}
+                disabled={saving === "profile"}
                 style={{
                   background: C.teal,
                   color: "white",
@@ -166,7 +152,7 @@ export default function SettingsPage() {
                   cursor: "pointer",
                 }}
               >
-                Save Changes
+                {saving === "profile" ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </Card>

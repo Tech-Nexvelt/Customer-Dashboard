@@ -1,21 +1,45 @@
 "use client";
 import React from "react";
-import { usePathname } from "next/navigation";
-import { Bell, Menu, Home, Sparkles, LogOut } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { 
+  Bell, 
+  Menu, 
+  Home, 
+  Sparkles, 
+  LogOut, 
+  X, 
+  ClipboardList, 
+  Bookmark, 
+  Clock, 
+  BarChart2, 
+  Timer, 
+  Settings,
+  LucideIcon
+} from "lucide-react";
+import { signOut } from "next-auth/react";
+import { toast } from "react-hot-toast";
 import C from "@/constants/colors";
 import { navItems, bottomNavItems } from "@/constants/navItems";
 import { useDashboard } from "@/lib/dashboard/dashboardContext";
-import { supabase } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
 import { useUser } from "@/features/auth/hooks/useUser";
+import Link from "next/link";
 
 const allItems = [...navItems, ...bottomNavItems];
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Home,
+  ClipboardList,
+  Bookmark,
+  Clock,
+  BarChart2,
+  Sparkles,
+  Timer,
+  Settings
+};
 
 interface TopBarProps {
   onMenuClick: () => void;
 }
-
-import Link from "next/link";
 
 export default function TopBar({ onMenuClick }: TopBarProps) {
   const pathname = usePathname();
@@ -26,10 +50,63 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
 
   const userName = user?.name || "User";
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.refresh();
+  const handleLogout = () => {
+    toast((t) => (
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-[#0F172A] border border-slate-100 shadow-sm">
+              <LogOut size={20} />
+            </div>
+            <div>
+              <p className="text-[15px] font-black text-[#0F172A] tracking-tight uppercase italic">Nexvelt</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sign Out</p>
+            </div>
+          </div>
+          <button onClick={() => toast.dismiss(t.id)} className="text-slate-300 hover:text-slate-500 transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+        
+        <div className="space-y-1">
+          <p className="text-[13px] font-bold text-[#0F172A]">End your session?</p>
+          <p className="text-[11px] text-slate-500 font-medium leading-relaxed">You will be securely logged out. Any unsaved changes might be lost.</p>
+        </div>
+
+        <div className="flex items-center gap-2 mt-2">
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id);
+              toast.loading("Ending session...", { id: "logout-loading" });
+              await signOut({ callbackUrl: "/?message=Signed out successfully" });
+            }}
+            className="flex-1 py-3 bg-[#0F172A] text-white text-[10px] font-black uppercase tracking-[0.15em] rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200"
+          >
+            Confirm Logout
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="flex-1 py-3 bg-white border border-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-[0.15em] rounded-xl hover:bg-slate-50 transition-all"
+          >
+            Stay Here
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 8000,
+      position: "top-center",
+      style: {
+        borderRadius: '28px',
+        background: '#fff',
+        padding: '24px',
+        minWidth: '350px',
+        boxShadow: '0 25px 70px -12px rgba(15, 23, 42, 0.15)',
+        border: '1px solid #f1f5f9'
+      },
+    });
   };
+
+  const ActiveIcon = (active?.icon && ICON_MAP[active.icon]) || Home;
 
   return (
     <div
@@ -98,7 +175,7 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
               justifyContent: "center"
             }}
           >
-            <Home size={15} color={C.text} strokeWidth={2.5} />
+            <ActiveIcon size={15} color={C.text} strokeWidth={2.5} />
           </div>
           {active?.label || "Overview"}
         </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { 
   Users, 
   Mail, 
@@ -25,66 +24,31 @@ interface OnboardingSubmission {
   domain: string;
 }
 
+const MOCK_SUBMISSIONS: OnboardingSubmission[] = [
+  { id: "1", created_at: new Date().toISOString(), name: "John Doe", email: "john@example.com", phone_number: "+1234567890", domain: "software-engineering" },
+  { id: "2", created_at: new Date(Date.now() - 86400000).toISOString(), name: "Jane Smith", email: "jane@example.com", phone_number: "+0987654321", domain: "data-analytics" },
+];
+
 export default function AdminOnboardingFeed() {
-  const [submissions, setSubmissions] = useState<OnboardingSubmission[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [submissions, setSubmissions] = useState<OnboardingSubmission[]>(MOCK_SUBMISSIONS);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [authorized, setAuthorized] = useState<boolean | null>(null);
-
-  // Security: Only these emails can access this page
-  const ADMIN_EMAILS = ["22211A1121@bvrit.ac.in", "nexvelt2013@gmail.com"];
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user && ADMIN_EMAILS.includes(user.email || "")) {
-        setAuthorized(true);
-        fetchSubmissions();
-      } else {
-        setAuthorized(false);
-      }
-    };
-    checkAuth();
-  }, []);
+  const [authorized, setAuthorized] = useState<boolean>(true);
 
   const fetchSubmissions = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("onboarding_form")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching submissions:", error);
-    } else {
-      setSubmissions(data || []);
-    }
-    setLoading(false);
+    // Mock fetch
+    setTimeout(() => {
+      setSubmissions(MOCK_SUBMISSIONS);
+      setLoading(false);
+    }, 500);
   };
-
-  useEffect(() => {
-    fetchSubmissions();
-  }, []);
 
   const filteredSubmissions = submissions.filter(s => 
     s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.domain.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  if (authorized === false) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center space-y-4">
-        <h1 className="text-2xl font-black text-[#0F172A] uppercase italic">Access Denied</h1>
-        <p className="text-slate-500 font-medium">You do not have permission to view this page.</p>
-        <a href="/dashboard/overview" className="text-[#2DD4A7] font-bold hover:underline py-2 px-4 bg-[#2DD4A7]/10 rounded-xl">Return to Safety</a>
-      </div>
-    );
-  }
-
-  if (authorized === null) {
-    return <div className="min-h-[60vh] flex items-center justify-center"><RefreshCw className="animate-spin text-[#2DD4A7]" /></div>;
-  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
